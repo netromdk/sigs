@@ -14,15 +14,23 @@ namespace sigs {
   class Signal {
     class Entry {
     public:
-      Entry(const Slot &slot, const Tag &tag) : slot(slot), tag(tag) { }
-      Entry(Slot &&slot, const Tag &tag) : slot(std::move(slot)), tag(tag) { }
+      Entry(const Slot &slot, const Tag &tag)
+        : slot(slot), tag(tag), signal(nullptr) { }
+
+      Entry(Slot &&slot, const Tag &tag)
+        : slot(std::move(slot)), tag(tag), signal(nullptr) { }
+
+      Entry(Signal *signal, const Tag &tag)
+        : signal(signal), tag(tag) { }
 
       const Slot &getSlot() const { return slot; }
       const Tag &getTag() const { return tag; }
+      Signal *getSignal() const { return signal; }
 
     private:
       Slot slot;
       Tag tag;
+      Signal *signal;
     };
 
     using Cont = std::vector<Entry>;
@@ -60,6 +68,13 @@ namespace sigs {
       connect(instance, mf, Tag());
     }
 
+    /// Connecting a signal will trigger all of its slots when this signal is
+    /// triggered.
+    void connect(Signal &signal, const Tag &tag = Tag()) {
+      Lock lock(entriesMutex);
+      entries.emplace_back(Entry(&signal, tag));
+    }
+
     void disconnect(const TagList &tags = TagList()) {
       Lock lock(entriesMutex);
 
@@ -82,7 +97,13 @@ namespace sigs {
     void operator()(Args &&...args) {
       Lock lock(entriesMutex);
       for (auto &entry : entries) {
-        entry.getSlot()(std::forward<Args>(args)...);
+        auto *sig = entry.getSignal();
+        if (sig) {
+          (*sig)(std::forward<Args>(args)...);
+        }
+        else {
+          entry.getSlot()(std::forward<Args>(args)...);
+        }
       }
     }
 
