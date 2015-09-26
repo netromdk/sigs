@@ -46,7 +46,7 @@ s();
 
 Note that all slots can be disconnected by giving no tag.
 
-Slots can be any callable type: lambda, functor, or function.
+Slots can be any callable type: lambda, functor, or function. Even member functions.
 
 ```c++
 void func() {
@@ -60,15 +60,27 @@ public:
   }
 };
 
+class Foo {
+public:
+  void test() {
+    std::cout << "Called member fuction\n";
+  }
+};
+
 sigs::Signal<> s;
 s.connect(func);
 s.connect([]{ std::cout << "Called lambda\n"; });
 s.connect(Functor());
+
+Foo foo;
+s.connect(&foo, &Foo::test);
+
 s();
 
 /* Prints:
 Called function
 Called lambda
 Called functor
+Called member funtion
 */
 ```
