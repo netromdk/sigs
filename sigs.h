@@ -1,5 +1,5 @@
-#ifndef SIGS_SIGNAL_H
-#define SIGS_SIGNAL_H
+#ifndef SIGS_SIGNAL_SLOT_H
+#define SIGS_SIGNAL_SLOT_H
 
 #include <tuple>
 #include <mutex>
@@ -70,4 +70,4 @@ namespace sigs {
   };
 }
 
-#endif // SIGS_SIGNAL_H
+#endif // SIGS_SIGNAL_SLOT_H
