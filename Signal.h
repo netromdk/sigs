@@ -8,31 +8,33 @@
 namespace sigs {
   template <typename Slot>
   class Signal {
-    using SlotCont = std::vector<Slot>;
+    using Cont = std::vector<Slot>;
+    using Lock = std::lock_guard<std::mutex>;
 
   public:
     using SlotType = Slot;
 
     void connect(const Slot &slot) {
+      Lock lock(slotsMutex);
       slots.emplace_back(slot);
     }
 
     void connect(Slot &&slot) {
+      Lock lock(slotsMutex);
       slots.emplace_back(std::move(slot));
     }
 
     template <typename ...Args>
     void operator()(Args &&...args) {
-      std::lock_guard<std::mutex> lock(invokeMutex);
-
+      Lock lock(slotsMutex);
       for (auto &slot : slots) {
         slot(std::forward<Args>(args)...);
       }
     }
 
   private:
-    SlotCont slots;
-    std::mutex invokeMutex;
+    Cont slots;
+    std::mutex slotsMutex;
   };
 }
 
