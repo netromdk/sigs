@@ -1,7 +1,9 @@
 # sigs
 Simple thread-safe signal/slot C++11 library, which is templated and include-only. No linking required. Just include the header file "*sigs.h*".
 
-The library consists of the class `sigs::Signal` on which you can connect and disconnect slots to be invoked when the signal is triggered. Upon triggering, any number of optional arguments can be forwarded to the slots as long as they conform with the parameter types of `sigs::Signal::SlotType`.
+In all its simplicity, the class `sigs::Signal` implements a signal that can be triggered when some event occurs. To receive the signal slots can be connected to it. A slot can be any callable type: lambda, functor, function, or member function. Slots can be disconnected when not needed anymore.
+
+A signal is triggered by invoking its `operator()()` with an optional amount of arguments to be forwarded to each of the connected slots' invocations. But they must conform with the parameter types of `sigs::Signal::SlotType`, which reflects the first template argument given when instantiating a `sigs::Signal`.
 
 # Examples
 The most simple use case is having a `void()` invoked:
