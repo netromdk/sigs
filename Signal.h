@@ -10,7 +10,19 @@
 namespace sigs {
   template <typename Slot, typename Tag = std::string>
   class Signal {
-    using Entry = std::tuple<Slot, Tag>;
+    class Entry {
+    public:
+      Entry(const Slot &slot, const Tag &tag) : slot(slot), tag(tag) { }
+      Entry(Slot &&slot, const Tag &tag) : slot(std::move(slot)), tag(tag) { }
+
+      const Slot &getSlot() const { return slot; }
+      const Tag &getTag() const { return tag; }
+
+    private:
+      Slot slot;
+      Tag tag;
+    };
+
     using Cont = std::vector<Entry>;
     using Lock = std::lock_guard<std::mutex>;
 
@@ -37,7 +49,7 @@ namespace sigs {
 
       auto end = entries.end();
       for (auto it = entries.begin(); it != end; it++) {
-        if (getTag(*it) == tag) {
+        if (it->getTag() == tag) {
           entries.erase(it);
         }
       }
@@ -47,19 +59,11 @@ namespace sigs {
     void operator()(Args &&...args) {
       Lock lock(entriesMutex);
       for (auto &entry : entries) {
-        getSlot(entry)(std::forward<Args>(args)...);
+        entry.getSlot()(std::forward<Args>(args)...);
       }
     }
 
   private:
-    inline const Slot &getSlot(const Entry &entry) const {
-      return std::get<0>(entry);
-    }
-
-    inline const Tag &getTag(const Entry &entry) const {
-      return std::get<1>(entry);
-    }
-
     Cont entries;
     std::mutex entriesMutex;
   };
