@@ -1,6 +1,7 @@
 #ifndef SIGS_SIGNAL_H
 #define SIGS_SIGNAL_H
 
+#include <mutex>
 #include <vector>
 #include <utility>
 
@@ -22,6 +23,8 @@ namespace sigs {
 
     template <typename ...Args>
     void operator()(Args &&...args) {
+      std::lock_guard<std::mutex> lock(invokeMutex);
+
       for (auto &slot : slots) {
         slot(std::forward<Args>(args)...);
       }
@@ -29,6 +32,7 @@ namespace sigs {
 
   private:
     SlotCont slots;
+    std::mutex invokeMutex;
   };
 }
 
