@@ -29,6 +29,7 @@ namespace sigs {
 
   public:
     using SlotType = Slot;
+    using TagType = Tag;
 
     void connect(const Slot &slot, const Tag &tag = Tag()) {
       Lock lock(entriesMutex);
