@@ -24,6 +24,11 @@ namespace sigs {
       slots.emplace_back(std::move(slot));
     }
 
+    void disconnect() {
+      Lock lock(slotsMutex);
+      slots.clear();
+    }
+
     template <typename ...Args>
     void operator()(Args &&...args) {
       Lock lock(slotsMutex);
