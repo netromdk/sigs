@@ -107,3 +107,21 @@ s(42, 1105);
 ```
 
 Note the use of `std::placeholders::_1` and `std::placeholders::_2` because `Foo::test` takes two arguments, and that the tag becomes required.
+
+Another useful feature is the ability to connect signals to signals. If a first signal is connected to a second signal, and the second signal is triggered, then all of the slots of the first signal are triggered as well - and with the same arguments.
+
+```c++
+sigs::Signal<> s1;
+s1.connect([]{ std::cout << "Hello 1 from s1\n"; });
+s1.connect([]{ std::cout << "Hello 2 from s1\n"; });
+
+sigs::Signal<> s2;
+s2.connect(s1);
+
+s2();
+
+/* Prints:
+Hello 1 from s1
+Hello 2 from s1
+*/
+```
