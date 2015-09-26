@@ -1,44 +1,34 @@
 #ifndef SIGS_SIGNAL_H
 #define SIGS_SIGNAL_H
 
-#include <map>
+#include <vector>
 #include <utility>
 
 namespace sigs {
-  template <typename Key, typename Func>
+  template <typename Slot>
   class Signal {
-    using FuncMap = std::multimap<Key, Func>;
+    using SlotCont = std::vector<Slot>;
 
   public:
-    using KeyType = Key;
-    using FuncType = Func;
+    using SlotType = Slot;
 
-    void connect(const Key &key, const Func &func) {
-      funcs.emplace(key, func);
+    void connect(const Slot &slot) {
+      slots.emplace_back(slot);
     }
 
-    void connect(Key &&key, const Func &func) {
-      funcs.emplace(std::move(key), func);
-    }
-
-    void connect(const Key &key, Func &&func) {
-      funcs.emplace(key, std::move(func));
-    }
-
-    void connect(Key &&key, Func &&func) {
-      funcs.emplace(std::move(key), std::move(func));
+    void connect(Slot &&slot) {
+      slots.emplace_back(std::move(slot));
     }
 
     template <typename ...Args>
-    void trigger(const Key &key, Args &&...args) {
-      auto range = funcs.equal_range(key);
-      for (auto it = range.first; it != range.second; it++) {
-        it->second(std::forward<Args>(args)...);
+    void operator()(Args &&...args) {
+      for (auto &slot : slots) {
+        slot(std::forward<Args>(args)...);
       }
     }
 
   private:
-    FuncMap funcs;
+    SlotCont slots;
   };
 }
 
