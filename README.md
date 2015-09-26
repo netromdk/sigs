@@ -1,5 +1,5 @@
 # sigs
-Simple signal/slot C++11 library, which is templated and include-only. No linking required. Just include the header file "*sigs.h*".
+Simple thread-safe signal/slot C++11 library, which is templated and include-only. No linking required. Just include the header file "*sigs.h*".
 
 The library consists of the class `sigs::Signal` on which you can connect and disconnect slots to be invoked when the signal is triggered. Upon triggering, any number of optional arguments can be forwarded to the slots as long as they conform with the parameter types of `sigs::Signal::SlotType`.
 
