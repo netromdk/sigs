@@ -41,11 +41,21 @@ namespace sigs {
       entries.emplace_back(Entry(std::move(slot), tag));
     }
 
-    template <typename Instance, typename MembFunc>
-    void connect(Instance *instance, MembFunc mf, const Tag &tag = Tag()) {
-      if (!instance) return;
+    /** In the case of connecting a member function with one or more parameters,
+        then pass std::placeholders::_1, std::placeholders::_2 etc. But in that
+        case a tag is required, too. */
+    template <typename Instance, typename MembFunc, typename ...Plchs>
+    void connect(Instance *instance, MembFunc mf, const Tag &tag,
+                 Plchs &&...plchs) {
       Lock lock(entriesMutex);
-      entries.emplace_back(Entry([=] { std::mem_fn(mf)(instance); }, tag));
+      Slot slot = std::bind(mf, instance, std::forward<Plchs>(plchs)...);
+      entries.emplace_back(Entry(slot, tag));
+    }
+
+    /// Convenience method for void() member functions with no tag.
+    template <typename Instance, typename MembFunc>
+    void connect(Instance *instance, MembFunc mf) {
+      connect(instance, mf, Tag());
     }
 
     void disconnect(const Tag &tag = Tag()) {
