@@ -7,6 +7,7 @@
 #include <vector>
 #include <utility>
 #include <functional>
+#include <initializer_list>
 
 namespace sigs {
   template <typename Slot = std::function<void()>, typename Tag = std::string>
@@ -26,6 +27,7 @@ namespace sigs {
 
     using Cont = std::vector<Entry>;
     using Lock = std::lock_guard<std::mutex>;
+    using TagList = std::initializer_list<Tag>;
 
   public:
     using SlotType = Slot;
@@ -58,18 +60,20 @@ namespace sigs {
       connect(instance, mf, Tag());
     }
 
-    void disconnect(const Tag &tag = Tag()) {
+    void disconnect(const TagList &tags = TagList()) {
       Lock lock(entriesMutex);
 
-      if (tag == Tag()) {
+      if (tags.size() == 0) {
         entries.clear();
         return;
       }
 
-      auto end = entries.end();
-      for (auto it = entries.begin(); it != end; it++) {
-        if (it->getTag() == tag) {
-          entries.erase(it);
+      for (const auto &tag : tags) {
+        auto end = entries.end();
+        for (auto it = entries.begin(); it != end; it++) {
+          if (it->getTag() == tag) {
+            entries.erase(it);
+          }
         }
       }
     }
