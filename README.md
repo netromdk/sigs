@@ -44,7 +44,7 @@ s.disconnect("the tag");
 s();
 ```
 
-Note that all slots can be disconnected by giving no tag.
+Note that all slots can be disconnected by giving no tag. And since `sigs::Signal::disconnect` takes an `std::initializer_list` you can disconnect several at the same time, e.g. `s.disconnect({"tag1", "tag2"})`.
 
 Slots can be any callable type: lambda, functor, or function. Even member functions.
 
