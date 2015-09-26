@@ -6,9 +6,10 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <functional>
 
 namespace sigs {
-  template <typename Slot, typename Tag = std::string>
+  template <typename Slot = std::function<void()>, typename Tag = std::string>
   class Signal {
     class Entry {
     public:
