@@ -41,6 +41,13 @@ namespace sigs {
       entries.emplace_back(Entry(std::move(slot), tag));
     }
 
+    template <typename Instance, typename MembFunc>
+    void connect(Instance *instance, MembFunc mf, const Tag &tag = Tag()) {
+      if (!instance) return;
+      Lock lock(entriesMutex);
+      entries.emplace_back(Entry([=] { std::mem_fn(mf)(instance); }, tag));
+    }
+
     void disconnect(const Tag &tag = Tag()) {
       Lock lock(entriesMutex);
 
