@@ -100,6 +100,10 @@ namespace sigs {
       }
     }
 
+    void disconnect(const Tag &tag) {
+      disconnect({tag});
+    }
+
     void operator()(Args &&...args) {
       Lock lock(entriesMutex);
       for (auto &entry : entries) {
