@@ -55,7 +55,7 @@ namespace sigs {
         then pass std::placeholders::_1, std::placeholders::_2 etc. But in that
         case a tag is required, too. */
     template <typename Instance, typename MembFunc, typename ...Plchs>
-    void connect(Instance *instance, MembFunc mf, const Tag &tag,
+    void connect(Instance *instance, MembFunc Instance::*mf, const Tag &tag,
                  Plchs &&...plchs) {
       Lock lock(entriesMutex);
       Slot slot = std::bind(mf, instance, std::forward<Plchs>(plchs)...);
@@ -64,7 +64,7 @@ namespace sigs {
 
     /// Convenience method for void() member functions with no tag.
     template <typename Instance, typename MembFunc>
-    void connect(Instance *instance, MembFunc mf) {
+    void connect(Instance *instance, MembFunc Instance::*mf) {
       connect(instance, mf, Tag());
     }
 
