@@ -48,6 +48,24 @@ namespace sigs {
     using SlotType = Slot;
     using TagType = Tag;
 
+    Signal() { }
+
+    Signal(const Signal &rhs) {
+      Lock lock1(entriesMutex);
+      Lock lock2(const_cast<Signal&>(rhs).entriesMutex);
+      entries = rhs.entries;
+    }
+
+    Signal &operator=(const Signal &rhs) {
+      Lock lock1(entriesMutex);
+      Lock lock2(const_cast<Signal&>(rhs).entriesMutex);
+      entries = rhs.entries;
+      return *this;
+    }
+
+    Signal(Signal &&rhs) = default;
+    Signal &operator=(Signal &&rhs) = default;
+
     void connect(const Slot &slot, const Tag &tag = Tag()) {
       Lock lock(entriesMutex);
       entries.emplace_back(Entry(slot, tag));
