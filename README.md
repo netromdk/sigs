@@ -9,7 +9,7 @@ A signal is triggered by invoking its `operator()()` with an optional amount of 
 The most simple use case is having a `void()` invoked:
 
 ```c++
-sigs::Signal<> s;
+sigs::Signal<void()> s;
 s.connect([]{ std::cout << "Hello, signals. I'm an invoked slot.\n"; });
 s(); // Trigger it, which will call the function.
 ```
@@ -17,7 +17,7 @@ s(); // Trigger it, which will call the function.
 As mentioned above you can pass arbitrary arguments to the slots but the types will be enforced at compile-time.
 
 ```c++
-sigs::Signal<std::function<void(int, std::string)>> s;
+sigs::Signal<void(int, const std::string&)> s;
 s.connect([](int n, const std::string &str) {
   std::cout << "I received " << n << " and " << str << std::endl;
 });
@@ -29,10 +29,10 @@ s(42, "I like lambdas!");
 s("hmm?", "I like lambdas!");
 ```
 
-Slots can be disconnected by the use of tags. The default tag type is `std::string` and can be retrieved by `sigs::Signal::TagType`.
+Slots can be disconnected by the use of tags. The tag type is `std::string` and can be retrieved by `sigs::Signal::TagType`.
 
 ```c++
-sigs::Signal<> s;
+sigs::Signal<void()> s;
 s.connect([]{ std::cout << "Hi"; });
 s.connect([]{ std::cout << " there!\n"; }, "the tag");
 
@@ -69,7 +69,7 @@ public:
   }
 };
 
-sigs::Signal<> s;
+sigs::Signal<void()> s;
 s.connect(func);
 s.connect([]{ std::cout << "Called lambda\n"; });
 s.connect(Functor());
@@ -97,7 +97,7 @@ public:
   }
 };
 
-sigs::Signal<std::function<void(int,int)>> s;
+sigs::Signal<void(int,int)> s;
 
 Foo foo;
 s.connect(&foo, &Foo::test, "tag", std::placeholders::_1, std::placeholders::_2);
@@ -111,7 +111,7 @@ Note the use of `std::placeholders::_1` and `std::placeholders::_2` because `Foo
 Another useful feature is the ability to connect signals to signals. If a first signal is connected to a second signal, and the second signal is triggered, then all of the slots of the first signal are triggered as well - and with the same arguments.
 
 ```c++
-sigs::Signal<> s1;
+sigs::Signal<void()> s1;
 s1.connect([]{ std::cout << "Hello 1 from s1\n"; });
 s1.connect([]{ std::cout << "Hello 2 from s1\n"; });
 
