@@ -10,8 +10,14 @@
 #include <initializer_list>
 
 namespace sigs {
-  template <typename Slot = std::function<void()>, typename Tag = std::string>
-  class Signal {
+  template <typename>
+  class Signal;
+
+  template <typename Ret, typename ...Args>
+  class Signal<Ret(Args...)> {
+    using Slot = std::function<Ret(Args...)>;
+    using Tag = std::string;
+
     class Entry {
     public:
       Entry(const Slot &slot, const Tag &tag)
@@ -38,6 +44,7 @@ namespace sigs {
     using TagList = std::initializer_list<Tag>;
 
   public:
+    using ReturnType = Ret;
     using SlotType = Slot;
     using TagType = Tag;
 
@@ -93,7 +100,6 @@ namespace sigs {
       }
     }
 
-    template <typename ...Args>
     void operator()(Args &&...args) {
       Lock lock(entriesMutex);
       for (auto &entry : entries) {
