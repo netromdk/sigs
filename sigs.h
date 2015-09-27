@@ -1,7 +1,6 @@
 #ifndef SIGS_SIGNAL_SLOT_H
 #define SIGS_SIGNAL_SLOT_H
 
-#include <tuple>
 #include <mutex>
 #include <string>
 #include <vector>
