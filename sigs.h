@@ -15,37 +15,27 @@ namespace sigs {
   template <typename Ret, typename ...Args>
   class Signal<Ret(Args...)> {
     using Slot = std::function<Ret(Args...)>;
-    using Tag = std::string;
 
     class Entry {
     public:
-      Entry(const Slot &slot, const Tag &tag)
-        : slot(slot), tag(tag), signal(nullptr) { }
-
-      Entry(Slot &&slot, const Tag &tag)
-        : slot(std::move(slot)), tag(tag), signal(nullptr) { }
-
-      Entry(Signal *signal, const Tag &tag)
-        : signal(signal), tag(tag) { }
+      Entry(const Slot &slot) : slot(slot), signal(nullptr) { }
+      Entry(Slot &&slot) : slot(std::move(slot)), signal(nullptr) { }
+      Entry(Signal *signal) : signal(signal) { }
 
       const Slot &getSlot() const { return slot; }
-      const Tag &getTag() const { return tag; }
       Signal *getSignal() const { return signal; }
 
     private:
       Slot slot;
-      Tag tag;
       Signal *signal;
     };
 
     using Cont = std::vector<Entry>;
     using Lock = std::lock_guard<std::mutex>;
-    using TagList = std::initializer_list<Tag>;
 
   public:
     using ReturnType = Ret;
     using SlotType = Slot;
-    using TagType = Tag;
 
     Signal() { }
 
@@ -65,40 +55,33 @@ namespace sigs {
     Signal(Signal &&rhs) = default;
     Signal &operator=(Signal &&rhs) = default;
 
-    void connect(const Slot &slot, const Tag &tag = Tag()) {
+    void connect(const Slot &slot) {
       Lock lock(entriesMutex);
-      entries.emplace_back(Entry(slot, tag));
+      entries.emplace_back(Entry(slot));
     }
 
-    void connect(Slot &&slot, const Tag &tag = Tag()) {
+    void connect(Slot &&slot) {
       Lock lock(entriesMutex);
-      entries.emplace_back(Entry(std::move(slot), tag));
+      entries.emplace_back(Entry(std::move(slot)));
     }
 
     /** In the case of connecting a member function with one or more parameters,
-        then pass std::placeholders::_1, std::placeholders::_2 etc. But in that
-        case a tag is required, too. */
+        then pass std::placeholders::_1, std::placeholders::_2 etc. */
     template <typename Instance, typename MembFunc, typename ...Plchs>
-    void connect(Instance *instance, MembFunc Instance::*mf, const Tag &tag,
-                 Plchs &&...plchs) {
+    void connect(Instance *instance, MembFunc Instance::*mf, Plchs &&...plchs) {
       Lock lock(entriesMutex);
       Slot slot = std::bind(mf, instance, std::forward<Plchs>(plchs)...);
-      entries.emplace_back(Entry(slot, tag));
-    }
-
-    /// Convenience method for void() member functions with no tag.
-    template <typename Instance, typename MembFunc>
-    void connect(Instance *instance, MembFunc Instance::*mf) {
-      connect(instance, mf, Tag());
+      entries.emplace_back(Entry(slot));
     }
 
     /// Connecting a signal will trigger all of its slots when this signal is
     /// triggered.
-    void connect(Signal &signal, const Tag &tag = Tag()) {
+    void connect(Signal &signal) {
       Lock lock(entriesMutex);
-      entries.emplace_back(Entry(&signal, tag));
+      entries.emplace_back(Entry(&signal));
     }
 
+    /*
     void disconnect(const TagList &tags = TagList()) {
       Lock lock(entriesMutex);
 
@@ -116,10 +99,7 @@ namespace sigs {
         }
       }
     }
-
-    void disconnect(const Tag &tag) {
-      disconnect({tag});
-    }
+    */
 
     void operator()(Args &&...args) {
       Lock lock(entriesMutex);
