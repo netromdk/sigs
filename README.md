@@ -29,24 +29,26 @@ s(42, "I like lambdas!");
 s("hmm?", "I like lambdas!");
 ```
 
-Slots can be disconnected by the use of tags. The tag type is `std::string` and can be retrieved by `sigs::Signal::TagType`.
+When connecting a slot the result is a `sigs::Connection`, and the connection can be disconnected by calling `sigs::Connection::disconnect()` or `sigs::Signal::disconnect(sigs::Connection)`.
 
 ```c++
 sigs::Signal<void()> s;
 s.connect([]{ std::cout << "Hi"; });
-s.connect([]{ std::cout << " there!\n"; }, "the tag");
+auto conn = s.connect([]{ std::cout << " there!\n"; });
 
 // Prints "Hi there!".
 s();
 
-// Disconnect second slot by tag name.
-s.disconnect("the tag");
+// Disconnect second slot.
+conn->disconnect();
+
+// Or by using the signal: s.disconnect(conn);
 
 // Prints "Hi".
 s();
 ```
 
-Note that all slots can be disconnected by giving no tag. And since `sigs::Signal::disconnect` takes an `std::initializer_list` you can disconnect several at the same time, e.g. `s.disconnect({"tag1", "tag2"})`.
+Note that all slots can be disconnected by giving no arguments to `sigs::Signal::disconnect()`, or by calling `sigs::Signal::clear()`.
 
 Slots can be any callable type: lambda, functor, or function. Even member functions.
 
