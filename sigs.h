@@ -2,6 +2,7 @@
 #define SIGS_SIGNAL_SLOT_H
 
 #include <mutex>
+#include <memory>
 #include <string>
 #include <vector>
 #include <utility>
@@ -9,6 +10,21 @@
 #include <initializer_list>
 
 namespace sigs {
+  class Connection {
+    template <typename>
+    friend class Signal;
+
+  public:
+    void disconnect() {
+      if (deleter) deleter();
+    }
+
+  private:
+    std::function<void()> deleter;
+  };
+
+  using ConnPtr = std::shared_ptr<Connection>;
+
   template <typename>
   class Signal;
 
@@ -18,15 +34,22 @@ namespace sigs {
 
     class Entry {
     public:
-      Entry(const Slot &slot) : slot(slot), signal(nullptr) { }
-      Entry(Slot &&slot) : slot(std::move(slot)), signal(nullptr) { }
-      Entry(Signal *signal) : signal(signal) { }
+      Entry(const Slot &slot, ConnPtr conn)
+        : slot(slot), conn(conn), signal(nullptr) { }
+
+      Entry(Slot &&slot, ConnPtr conn)
+        : slot(std::move(slot)), conn(conn), signal(nullptr) { }
+
+      Entry(Signal *signal, ConnPtr conn)
+        : conn(conn), signal(signal) { }
 
       const Slot &getSlot() const { return slot; }
       Signal *getSignal() const { return signal; }
+      ConnPtr getConn() const { return conn; }
 
     private:
       Slot slot;
+      ConnPtr conn;
       Signal *signal;
     };
 
@@ -55,51 +78,71 @@ namespace sigs {
     Signal(Signal &&rhs) = default;
     Signal &operator=(Signal &&rhs) = default;
 
-    void connect(const Slot &slot) {
+    ConnPtr connect(const Slot &slot) {
       Lock lock(entriesMutex);
-      entries.emplace_back(Entry(slot));
+      auto conn = makeConnection();
+      entries.emplace_back(Entry(slot, conn));
+      return conn;
     }
 
-    void connect(Slot &&slot) {
+    ConnPtr connect(Slot &&slot) {
       Lock lock(entriesMutex);
-      entries.emplace_back(Entry(std::move(slot)));
+      auto conn = makeConnection();
+      entries.emplace_back(Entry(std::move(slot), conn));
+      return conn;
     }
 
     /** In the case of connecting a member function with one or more parameters,
         then pass std::placeholders::_1, std::placeholders::_2 etc. */
     template <typename Instance, typename MembFunc, typename ...Plchs>
-    void connect(Instance *instance, MembFunc Instance::*mf, Plchs &&...plchs) {
+    ConnPtr connect(Instance *instance, MembFunc Instance::*mf,
+                    Plchs &&...plchs) {
       Lock lock(entriesMutex);
       Slot slot = std::bind(mf, instance, std::forward<Plchs>(plchs)...);
-      entries.emplace_back(Entry(slot));
+      auto conn = makeConnection();
+      entries.emplace_back(Entry(slot, conn));
+      return conn;
     }
 
     /// Connecting a signal will trigger all of its slots when this signal is
     /// triggered.
-    void connect(Signal &signal) {
+    ConnPtr connect(Signal &signal) {
       Lock lock(entriesMutex);
-      entries.emplace_back(Entry(&signal));
+      auto conn = makeConnection();
+      entries.emplace_back(Entry(&signal, conn));
+      return conn;
     }
 
-    /*
-    void disconnect(const TagList &tags = TagList()) {
+    void clear() {
       Lock lock(entriesMutex);
+      entries.clear();
+    }
 
-      if (tags.size() == 0) {
-        entries.clear();
+    void disconnect(ConnPtr conn = nullptr) {
+      if (!conn) {
+        clear();
         return;
       }
 
-      for (const auto &tag : tags) {
-        auto end = entries.end();
-        for (auto it = entries.begin(); it != end; it++) {
-          if (it->getTag() == tag) {
-            entries.erase(it);
-          }
+      Lock lock(entriesMutex);
+
+      auto end = entries.end();
+      for (auto it = entries.begin(); it != end; it++) {
+        if (it->getConn() == conn) {
+          entries.erase(it);
         }
       }
     }
-    */
+
+    void disconnect(Signal &signal) {
+      Lock lock(entriesMutex);
+      auto end = entries.end();
+      for (auto it = entries.begin(); it != end; it++) {
+        if (it->getSignal() == &signal) {
+          entries.erase(it);
+        }
+      }
+    }
 
     void operator()(Args &&...args) {
       Lock lock(entriesMutex);
@@ -115,6 +158,14 @@ namespace sigs {
     }
 
   private:
+    ConnPtr makeConnection() {
+      auto conn = std::make_shared<Connection>();
+      conn->deleter = [this, conn]{
+        this->disconnect(conn);
+      };
+      return conn;
+    }
+
     Cont entries;
     std::mutex entriesMutex;
   };
