@@ -10,7 +10,7 @@
 #include <initializer_list>
 
 namespace sigs {
-  class Connection {
+  class ConnectionBase {
     template <typename>
     friend class Signal;
 
@@ -23,7 +23,7 @@ namespace sigs {
     std::function<void()> deleter;
   };
 
-  using ConnPtr = std::shared_ptr<Connection>;
+  using Connection = std::shared_ptr<ConnectionBase>;
 
   template <typename>
   class Signal;
@@ -34,22 +34,22 @@ namespace sigs {
 
     class Entry {
     public:
-      Entry(const Slot &slot, ConnPtr conn)
+      Entry(const Slot &slot, Connection conn)
         : slot(slot), conn(conn), signal(nullptr) { }
 
-      Entry(Slot &&slot, ConnPtr conn)
+      Entry(Slot &&slot, Connection conn)
         : slot(std::move(slot)), conn(conn), signal(nullptr) { }
 
-      Entry(Signal *signal, ConnPtr conn)
+      Entry(Signal *signal, Connection conn)
         : conn(conn), signal(signal) { }
 
       const Slot &getSlot() const { return slot; }
       Signal *getSignal() const { return signal; }
-      ConnPtr getConn() const { return conn; }
+      Connection getConn() const { return conn; }
 
     private:
       Slot slot;
-      ConnPtr conn;
+      Connection conn;
       Signal *signal;
     };
 
@@ -88,14 +88,14 @@ namespace sigs {
     Signal(Signal &&rhs) = default;
     Signal &operator=(Signal &&rhs) = default;
 
-    ConnPtr connect(const Slot &slot) {
+    Connection connect(const Slot &slot) {
       Lock lock(entriesMutex);
       auto conn = makeConnection();
       entries.emplace_back(Entry(slot, conn));
       return conn;
     }
 
-    ConnPtr connect(Slot &&slot) {
+    Connection connect(Slot &&slot) {
       Lock lock(entriesMutex);
       auto conn = makeConnection();
       entries.emplace_back(Entry(std::move(slot), conn));
@@ -105,7 +105,7 @@ namespace sigs {
     /** In the case of connecting a member function with one or more parameters,
         then pass std::placeholders::_1, std::placeholders::_2 etc. */
     template <typename Instance, typename MembFunc, typename ...Plchs>
-    ConnPtr connect(Instance *instance, MembFunc Instance::*mf,
+    Connection connect(Instance *instance, MembFunc Instance::*mf,
                     Plchs &&...plchs) {
       Lock lock(entriesMutex);
       Slot slot = std::bind(mf, instance, std::forward<Plchs>(plchs)...);
@@ -116,7 +116,7 @@ namespace sigs {
 
     /// Connecting a signal will trigger all of its slots when this signal is
     /// triggered.
-    ConnPtr connect(Signal &signal) {
+    Connection connect(Signal &signal) {
       Lock lock(entriesMutex);
       auto conn = makeConnection();
       entries.emplace_back(Entry(&signal, conn));
@@ -128,7 +128,7 @@ namespace sigs {
       entries.clear();
     }
 
-    void disconnect(ConnPtr conn = nullptr) {
+    void disconnect(Connection conn = nullptr) {
       if (!conn) {
         clear();
         return;
@@ -168,8 +168,8 @@ namespace sigs {
     }
 
   private:
-    ConnPtr makeConnection() {
-      auto conn = std::make_shared<Connection>();
+    Connection makeConnection() {
+      auto conn = std::make_shared<ConnectionBase>();
       conn->deleter = [this, conn]{
         this->disconnect(conn);
       };
