@@ -127,3 +127,5 @@ Hello 1 from s1
 Hello 2 from s1
 */
 ```
+
+A signal can be disconnected by using `sigs::Signal::disconnect(sigs::Signal&)`, or the regular `sigs::Connection::disconnect()`.
