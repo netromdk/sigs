@@ -62,6 +62,16 @@ namespace sigs {
 
     Signal() { }
 
+    virtual ~Signal() {
+      Lock lock(entriesMutex);
+      for (auto &entry : entries) {
+        auto conn = entry.getConn();
+        if (conn) {
+          conn->deleter = nullptr;
+        }
+      }
+    }
+
     Signal(const Signal &rhs) {
       Lock lock1(entriesMutex);
       Lock lock2(const_cast<Signal&>(rhs).entriesMutex);
