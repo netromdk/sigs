@@ -125,7 +125,10 @@ namespace sigs {
 
     void clear() {
       Lock lock(entriesMutex);
-      entries.clear();
+      auto end = entries.end();
+      for (auto it = entries.begin(); it != end; it++) {
+        eraseEntry(it);
+      }
     }
 
     void disconnect(Connection conn = nullptr) {
@@ -139,7 +142,7 @@ namespace sigs {
       auto end = entries.end();
       for (auto it = entries.begin(); it != end; it++) {
         if (it->getConn() == conn) {
-          entries.erase(it);
+          eraseEntry(it);
         }
       }
     }
@@ -149,7 +152,7 @@ namespace sigs {
       auto end = entries.end();
       for (auto it = entries.begin(); it != end; it++) {
         if (it->getSignal() == &signal) {
-          entries.erase(it);
+          eraseEntry(it);
         }
       }
     }
@@ -174,6 +177,15 @@ namespace sigs {
         this->disconnect(conn);
       };
       return conn;
+    }
+
+    /// Expects entries container to be locked beforehand.
+    void eraseEntry(typename Cont::iterator it) {
+      auto conn = it->getConn();
+      if (conn) {
+        conn->deleter = nullptr;
+      }
+      entries.erase(it);
     }
 
     Cont entries;
