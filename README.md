@@ -89,27 +89,6 @@ Called member funtion
 */
 ```
 
-However, if connecting a member function taking one or more arguments then you have to hint at the number (not the type or value).
-
-```c++
-class Foo {
-public:
-  void test(int i, int j) {
-    std::cout << "Called member function: i=" << i << ", j=" << j << std::endl;
-  }
-};
-
-sigs::Signal<void(int,int)> s;
-
-Foo foo;
-s.connect(&foo, &Foo::test, "tag", std::placeholders::_1, std::placeholders::_2);
-
-// Prints "Called member function: i=42, j=1105".
-s(42, 1105);
-```
-
-Note the use of `std::placeholders::_1` and `std::placeholders::_2` because `Foo::test` takes two arguments, and that the tag becomes required.
-
 Another useful feature is the ability to connect signals to signals. If a first signal is connected to a second signal, and the second signal is triggered, then all of the slots of the first signal are triggered as well - and with the same arguments.
 
 ```c++
