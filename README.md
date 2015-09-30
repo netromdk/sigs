@@ -96,7 +96,7 @@ sigs::Signal<void()> s1;
 s1.connect([]{ std::cout << "Hello 1 from s1\n"; });
 s1.connect([]{ std::cout << "Hello 2 from s1\n"; });
 
-sigs::Signal<> s2;
+decltype(s1) s2;
 s2.connect(s1);
 
 s2();
