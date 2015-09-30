@@ -6,8 +6,34 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <cstddef>
 #include <functional>
 #include <initializer_list>
+
+// The following is used for making variadic type lists for binding member
+// functions and their parameters.
+namespace sigs {
+  template <std::size_t ...Ns>
+  class Seq { };
+
+  template <std::size_t N, std::size_t ...Ns>
+  class MakeSeq : public MakeSeq<N-1, N-1, Ns...> { };
+
+  template <std::size_t ...Ns>
+  class MakeSeq<0, Ns...> : public Seq<Ns...> { };
+
+  template <std::size_t>
+  class Placeholder { };
+}
+
+// std::bind uses std::is_placeholder to detect placeholders for unbounded
+// arguments, so it must be overridden to accept the custom sigs::Placeholder
+// type.
+namespace std {
+  template <size_t N>
+  class is_placeholder<sigs::Placeholder<N>>
+    : public integral_constant<std::size_t, N+1> { };
+}
 
 namespace sigs {
   class ConnectionBase {
@@ -102,13 +128,10 @@ namespace sigs {
       return conn;
     }
 
-    /** In the case of connecting a member function with one or more parameters,
-        then pass std::placeholders::_1, std::placeholders::_2 etc. */
-    template <typename Instance, typename MembFunc, typename ...Plchs>
-    Connection connect(Instance *instance, MembFunc Instance::*mf,
-                    Plchs &&...plchs) {
+    template <typename Instance, typename MembFunc>
+    Connection connect(Instance *instance, MembFunc Instance::*mf) {
       Lock lock(entriesMutex);
-      Slot slot = std::bind(mf, instance, std::forward<Plchs>(plchs)...);
+      auto slot = bindMf(instance, mf);
       auto conn = makeConnection();
       entries.emplace_back(Entry(slot, conn));
       return conn;
@@ -186,6 +209,16 @@ namespace sigs {
         conn->deleter = nullptr;
       }
       entries.erase(it);
+    }
+
+    template <typename Instance, typename MembFunc, std::size_t ...Ns>
+    Slot bindMf(Instance *instance, MembFunc Instance::*mf, Seq<Ns...>) {
+      return std::bind(mf, instance, Placeholder<Ns>()...);
+    }
+
+    template <typename Instance, typename MembFunc>
+    Slot bindMf(Instance *instance, MembFunc Instance::*mf) {
+      return bindMf(instance, mf, MakeSeq<sizeof...(Args)>());
     }
 
     Cont entries;
