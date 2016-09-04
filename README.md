@@ -108,3 +108,46 @@ Hello 2 from s1
 ```
 
 A signal can be disconnected by using `sigs::Signal::disconnect(sigs::Signal&)`, or the regular `sigs::Connection::disconnect()`.
+
+# Ambiguous types
+Sometimes there are several overloads for a given function and then it's not enough to just specify `&Class::functionName` because the compiler does not know which overload to choose.
+
+Consider the following code:
+
+```c++
+class Ambiguous {
+public:
+  void foo(int i, int j) { std::cout << "Ambiguous::foo(int, int)\n"; }
+
+  void foo(int i, float j) { std::cout << "Ambiguous::foo(int, float)\n"; }
+};
+
+sigs::Signal<void(int, int)> s;
+
+Ambiguous amb;
+s.connect(&amb, &Ambiguous::foo); // <-- Will fail!
+```
+
+Instead we must use the `sigs::Use<>::overloadOf()` construct:
+
+```c++
+s.connect(&amb, sigs::Use<int, int>::overloadOf(&Ambiguous::foo));
+s(42, 48);
+
+/* Prints:
+Ambiguous::foo(int, int)
+*/
+```
+
+Without changing the signal we can also connect the second overload `foo(int, float)`:
+
+```c++
+// This one only works because int can be coerced into float.
+s.connect(&amb, sigs::Use<int, float>::overloadOf(&Ambiguous::foo));
+s(12, 34);
+
+/* Prints:
+Ambiguous::foo(int, int)
+Ambiguous::foo(int, float)
+*/
+```
