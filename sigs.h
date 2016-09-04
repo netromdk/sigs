@@ -42,9 +42,9 @@ namespace sigs {
       */
   template <typename... Args>
   struct Use {
-    template <typename CLS, typename RET>
-    static auto overloadOf(RET (CLS::*MEMB_FUNC)(Args...)) -> decltype(MEMB_FUNC) {
-      return MEMB_FUNC;
+    template <typename Cls, typename Ret>
+    static auto overloadOf(Ret (Cls::*MembFunc)(Args...)) -> decltype(MembFunc) {
+      return MembFunc;
     }
   };
 
