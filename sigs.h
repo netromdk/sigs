@@ -36,6 +36,18 @@ namespace std {
 }
 
 namespace sigs {
+  /// When a member function has muliple overloads and you need to use just one of them.
+  /** Example:
+      signal.connect(&instance, sigs::Use<int, float>::overloadOf(&ThClass::func));
+      */
+  template <typename... Args>
+  struct Use {
+    template <typename CLS, typename RET>
+    static auto overloadOf(RET (CLS::*MEMB_FUNC)(Args...)) -> decltype(MEMB_FUNC) {
+      return MEMB_FUNC;
+    }
+  };
+
   class ConnectionBase {
     template <typename>
     friend class Signal;
