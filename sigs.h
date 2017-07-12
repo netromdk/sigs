@@ -73,22 +73,22 @@ namespace sigs {
     class Entry {
     public:
       Entry(const Slot &slot, Connection conn)
-        : slot(slot), conn(conn), signal(nullptr) { }
+        : slot_(slot), conn_(conn), signal_(nullptr) { }
 
       Entry(Slot &&slot, Connection conn)
-        : slot(std::move(slot)), conn(conn), signal(nullptr) { }
+        : slot_(std::move(slot)), conn_(conn), signal_(nullptr) { }
 
       Entry(Signal *signal, Connection conn)
-        : conn(conn), signal(signal) { }
+        : conn_(conn), signal_(signal) { }
 
-      const Slot &getSlot() const { return slot; }
-      Signal *getSignal() const { return signal; }
-      Connection getConn() const { return conn; }
+      const Slot &slot() const { return slot_; }
+      Signal *signal() const { return signal_; }
+      Connection conn() const { return conn_; }
 
     private:
-      Slot slot;
-      Connection conn;
-      Signal *signal;
+      Slot slot_;
+      Connection conn_;
+      Signal *signal_;
     };
 
     using Cont = std::vector<Entry>;
@@ -103,7 +103,7 @@ namespace sigs {
     virtual ~Signal() {
       Lock lock(entriesMutex);
       for (auto &entry : entries) {
-        auto conn = entry.getConn();
+        auto conn = entry.conn();
         if (conn) {
           conn->deleter = nullptr;
         }
@@ -176,7 +176,7 @@ namespace sigs {
 
       auto end = entries.end();
       for (auto it = entries.begin(); it != end; it++) {
-        if (it->getConn() == conn) {
+        if (it->conn() == conn) {
           eraseEntry(it);
         }
       }
@@ -186,7 +186,7 @@ namespace sigs {
       Lock lock(entriesMutex);
       auto end = entries.end();
       for (auto it = entries.begin(); it != end; it++) {
-        if (it->getSignal() == &signal) {
+        if (it->signal() == &signal) {
           eraseEntry(it);
         }
       }
@@ -195,12 +195,12 @@ namespace sigs {
     void operator()(Args &&...args) {
       Lock lock(entriesMutex);
       for (auto &entry : entries) {
-        auto *sig = entry.getSignal();
+        auto *sig = entry.signal();
         if (sig) {
           (*sig)(std::forward<Args>(args)...);
         }
         else {
-          entry.getSlot()(std::forward<Args>(args)...);
+          entry.slot()(std::forward<Args>(args)...);
         }
       }
     }
@@ -216,7 +216,7 @@ namespace sigs {
 
     /// Expects entries container to be locked beforehand.
     void eraseEntry(typename Cont::iterator it) {
-      auto conn = it->getConn();
+      auto conn = it->conn();
       if (conn) {
         conn->deleter = nullptr;
       }
