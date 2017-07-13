@@ -7,6 +7,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -72,6 +73,25 @@ private:
 };
 
 using Connection = std::shared_ptr<ConnectionBase>;
+
+namespace {
+
+/// VoidableFunction is used internally to generate a function type depending on whether the return
+/// type of the signal is non-void.
+template <typename T>
+class VoidableFunction {
+public:
+  using func = std::function<void(T)>;
+};
+
+/// Specialization for void return types.
+template <>
+class VoidableFunction<void> {
+public:
+  using func = std::function<void()>;
+};
+
+} // namespace
 
 template <typename>
 class Signal;
@@ -241,6 +261,23 @@ public:
     }
   }
 
+  template <typename RetFunc = typename VoidableFunction<ReturnType>::func>
+  void operator()(const RetFunc &retFunc, Args &&... args)
+  {
+    static_assert(!isVoidReturn(), "Must have non-void return type!");
+
+    Lock lock(entriesMutex);
+    for (auto &entry : entries) {
+      auto *sig = entry.signal();
+      if (sig) {
+        (*sig)(retFunc, std::forward<Args>(args)...);
+      }
+      else {
+        retFunc(entry.slot()(std::forward<Args>(args)...));
+      }
+    }
+  }
+
 private:
   Connection makeConnection()
   {
@@ -269,6 +306,11 @@ private:
   Slot bindMf(Instance *instance, MembFunc Instance::*mf)
   {
     return bindMf(instance, mf, MakeSeq<sizeof...(Args)>());
+  }
+
+  static constexpr bool isVoidReturn()
+  {
+    return std::is_void<ReturnType>::value;
   }
 
   Cont entries;
