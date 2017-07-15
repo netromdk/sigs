@@ -13,6 +13,8 @@ add_executable(
   ${testName}
 
   main.cc
+
+  General.cc
   )
 
 add_test(
