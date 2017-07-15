@@ -151,3 +151,18 @@ Ambiguous::foo(int, int)
 Ambiguous::foo(int, float)
 */
 ```
+
+# Acting on return values
+If slots have return values they can be gathered by triggering the signal with a function. But the argument type must be the same as the return type!
+
+The following example adds together the integers from each connected slot:
+```c++
+sigs::Signal<int()> s;
+s.connect([] { return 1; });
+s.connect([] { return 2; });
+s.connect([] { return 3; });
+
+int sum = 0;
+s([&sum](int retVal) { sum += retVal; });
+// sum is now = 1 + 2 + 3 = 6
+```
