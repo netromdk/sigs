@@ -5,7 +5,15 @@ In all its simplicity, the class `sigs::Signal` implements a signal that can be 
 
 A signal is triggered by invoking its `operator()()` with an optional amount of arguments to be forwarded to each of the connected slots' invocations. But they must conform with the parameter types of `sigs::Signal::SlotType`, which reflects the first template argument given when instantiating a `sigs::Signal`.
 
-# Examples
+Table of contents
+=================
+
+* [Examples](#examples)
+* [Ambiguous types](#ambiguous-types)
+* [Return values](#return-values)
+
+Examples
+========
 The most simple use case is having a `void()` invoked:
 
 ```c++
@@ -109,7 +117,8 @@ Hello 2 from s1
 
 A signal can be disconnected by using `sigs::Signal::disconnect(sigs::Signal&)`, or the regular `sigs::Connection::disconnect()`.
 
-# Ambiguous types
+Ambiguous types
+===============
 Sometimes there are several overloads for a given function and then it's not enough to just specify `&Class::functionName` because the compiler does not know which overload to choose.
 
 Consider the following code:
@@ -152,7 +161,8 @@ Ambiguous::foo(int, float)
 */
 ```
 
-# Acting on return values
+Return values
+=============
 If slots have return values they can be gathered by triggering the signal with a function. But the argument type must be the same as the return type!
 
 The following example adds together the integers from each connected slot:
