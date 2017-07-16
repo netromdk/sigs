@@ -26,3 +26,5 @@ target_link_libraries(
   ${testName}
   gtest
   )
+
+add_subdirectory(failtests)
