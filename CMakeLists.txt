@@ -55,12 +55,12 @@ if (CODE_COVERAGE)
     )
 endif()
 
-# Setup: scan-build cmake -G Ninja -DSTATIC_ANALYZER=ON ../../
+# Setup: scan-build cmake -G <GENERATOR> -DSTATIC_ANALYZER=ON ../../
 if (STATIC_ANALYZER)
   add_custom_target(
     sa
 
-    scan-build -v -V -k ninja
+    scan-build -v -V -k cmake --build .
 
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Doing static analysis"
