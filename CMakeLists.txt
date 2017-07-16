@@ -42,7 +42,7 @@ enable_testing()
 add_subdirectory(tests)
 
 # Requires llvm/clang v4+!
-# Setup: CC=clang-mp-devel CXX=clang++-mp-devel cmake -G Ninja -DCODE_COVERAGE=ON ../../
+# Setup: cmake -G <GENERATOR> -DCODE_COVERAGE=ON ../../
 if (CODE_COVERAGE)
   add_custom_target(
     codecov
