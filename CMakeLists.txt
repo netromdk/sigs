@@ -22,7 +22,22 @@ include(platform)
 include(target)
 
 if (CODE_COVERAGE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
+  find_program(found_llvm_profdata llvm-profdata)
+  find_program(found_llvm_cov llvm-cov)
+
+  if (NOT found_llvm_profdata)
+    message(WARNING "llvm-profdata not found! Is required for code coverage, disabling.")
+    set(CODE_COVERAGE OFF)
+  endif()
+
+  if (NOT found_llvm_cov)
+    message(WARNING "llvm-cov not found! Is required for code coverage, disabling.")
+    set(CODE_COVERAGE OFF)
+  endif()
+
+  if (CODE_COVERAGE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
+  endif()
 endif()
 
 if (ADDRESS_SANITIZER)
@@ -31,7 +46,13 @@ if (ADDRESS_SANITIZER)
 endif()
 
 if (STATIC_ANALYZER)
-  set(CMAKE_BUILD_TYPE Debug)
+  find_program(found_scan_build scan-build)
+  if (NOT found_scan_build)
+    message(WARNING "scan-build not found! Is required for static analysis, disabling.")
+    set(STATIC_ANALYZER OFF)
+  else()
+    set(CMAKE_BUILD_TYPE Debug)
+  endif()
 endif()
 
 # Names
@@ -69,14 +90,17 @@ endif()
 
 # cppcheck can be cloned and compiled: git clone git@github.com:danmar/cppcheck.git
 # Remember to compile using CFGDIR=absolute-path-to-cfg-folder and HAVE_RULES=yes!
-add_custom_target(
-  cppcheck
+find_program(found_cppcheck cppcheck)
+if (found_cppcheck)
+  add_custom_target(
+    cppcheck
 
-  cppcheck --enable=all --std=c++11 --language=c++ --project=${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/sigs.h --xml 2> cppcheck.xml && python ${CMAKE_SOURCE_DIR}/scripts/cppcheck-htmlreport.py --file=cppcheck.xml --report-dir=cppcheck
+    cppcheck --enable=all --std=c++11 --language=c++ --project=${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/sigs.h --xml 2> cppcheck.xml && python ${CMAKE_SOURCE_DIR}/scripts/cppcheck-htmlreport.py --file=cppcheck.xml --report-dir=cppcheck
 
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  COMMENT "Running cppcheck"
-  )
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Running cppcheck"
+    )
+endif()
 
 message(STATUS "--------------------------------------------------")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
@@ -93,6 +117,12 @@ if (STATIC_ANALYZER)
   message(STATUS "Static analyzer: ${STATIC_ANALYZER} (target: sa)")
 else()
   message(STATUS "Static analyzer: ${STATIC_ANALYZER}")
+endif()
+
+if (found_cppcheck)
+  message(STATUS "cppcheck target: enabled")
+else()
+  message(STATUS "cppcheck target: disabled (cppcheck not found)")
 endif()
 
 message(STATUS "--------------------------------------------------")
