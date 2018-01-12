@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/netromdk/sigs.svg?branch=master)](https://travis-ci.org/netromdk/sigs)
+
 # sigs
 Simple thread-safe signal/slot C++14 library, which is templated and include-only. No linking required. Just include the header file "*sigs.h*".
 

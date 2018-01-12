@@ -27,4 +27,11 @@ target_link_libraries(
   gtest
   )
 
+if (LINUX)
+  target_link_libraries(
+    ${testName}
+    -pthread
+    )
+endif()
+
 add_subdirectory(failtests)

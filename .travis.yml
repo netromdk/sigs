@@ -1,0 +1,58 @@
+# Not using "cpp" because the default tools are so old!
+language: generic
+
+matrix:
+  include:
+    # works on Precise and Trusty
+    - os: linux
+      sudo: required
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+      env:
+        - CC=gcc-6
+        - CXX=g++-6
+
+    # works on Precise and Trusty
+    - os: linux
+      sudo: required
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - CC=gcc-7
+        - CXX=g++-7
+
+    # works on Trusty
+    - os: linux
+      sudo: required
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+      env:
+        - CC=clang-5.0
+        - CXX=clang++-5.0
+
+before_install:
+  - echo $LANG
+  - echo $LC_ALL
+  - echo $CC
+  - echo $CXX
+
+before_script:
+  - cmake --system-information info.txt && cat info.txt
+  - mkdir build
+  - cd build
+  - cmake ..
+
+script:
+  - VERBOSE=1 make -j2 && ctest --verbose
