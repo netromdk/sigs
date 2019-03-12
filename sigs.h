@@ -76,7 +76,7 @@ namespace sigs {
     signal.connect(&instance, sigs::Use<int, float>::overloadOf(&ThClass::func));
     */
 template <typename... Args>
-struct Use {
+struct Use final {
   template <typename Cls, typename Ret>
   [[nodiscard]] static auto overloadOf(Ret (Cls::*MembFunc)(Args...))
   {
@@ -84,7 +84,7 @@ struct Use {
   }
 };
 
-class ConnectionBase {
+class ConnectionBase final {
   template <typename>
   friend class Signal;
 
@@ -105,14 +105,14 @@ namespace {
 /// VoidableFunction is used internally to generate a function type depending on whether the return
 /// type of the signal is non-void.
 template <typename T>
-class VoidableFunction {
+class VoidableFunction final {
 public:
   using func = std::function<void(T)>;
 };
 
 /// Specialization for void return types.
 template <>
-class VoidableFunction<void> {
+class VoidableFunction<void> final {
 public:
   using func = std::function<void()>;
 };
@@ -123,10 +123,10 @@ template <typename>
 class Signal;
 
 template <typename Ret, typename... Args>
-class Signal<Ret(Args...)> {
+class Signal<Ret(Args...)> final {
   using Slot = std::function<Ret(Args...)>;
 
-  class Entry {
+  class Entry final {
   public:
     Entry(const Slot &slot, Connection conn) : slot_(slot), conn_(conn), signal_(nullptr)
     {
