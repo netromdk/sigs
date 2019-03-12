@@ -31,6 +31,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <initializer_list>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -244,7 +245,7 @@ public:
     }
   }
 
-  void disconnect(Connection conn = nullptr)
+  void disconnect(std::optional<Connection> conn)
   {
     if (!conn) {
       clear();
