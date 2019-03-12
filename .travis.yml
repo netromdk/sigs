@@ -11,10 +11,10 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-6
+            - g++-7
       env:
-        - CC=gcc-6
-        - CXX=g++-6
+        - CC=gcc-7
+        - CXX=g++-7
 
     # works on Precise and Trusty
     - os: linux
@@ -24,10 +24,10 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-7
+            - g++-8
       env:
-        - CC=gcc-7
-        - CXX=g++-7
+        - CC=gcc-8
+        - CXX=g++-8
 
     # works on Trusty
     - os: linux
@@ -35,12 +35,33 @@ matrix:
       addons:
         apt:
           sources:
-            - llvm-toolchain-trusty-5.0
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-6.0
+            - sourceline: 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-6.0 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
-            - clang-5.0
+            - g++-7 # Only to get the latest libstd++
+            - clang-6.0
       env:
-        - CC=clang-5.0
-        - CXX=clang++-5.0
+        - CC=clang-6.0
+        - CXX=clang++-6.0
+
+    # works on Trusty
+    - os: linux
+      sudo: required
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-7
+            - sourceline: 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-7 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - g++-7 # Only to get the latest libstd++
+            - clang-7
+      env:
+        - CC=clang-7
+        - CXX=clang++-7
 
 before_install:
   - echo $LANG
