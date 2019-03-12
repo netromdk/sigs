@@ -1,4 +1,4 @@
-set(CMAKE_CXX_FLAGS "-Wall -std=c++14")
+set(CMAKE_CXX_FLAGS "-Wall -std=c++17")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 set(CMAKE_CXX_FLAGS_MINSIZEREL "-O3 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
@@ -20,26 +20,29 @@ if (NOT WIN32)
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-  execute_process(
-    COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
-    OUTPUT_VARIABLE GCC_VERSION
-    )
-  if (NOT (GCC_VERSION VERSION_GREATER 5.0 OR GCC_VERSION VERSION_EQUAL 5.0))
-    message(FATAL_ERROR "Requires GCC >= 5.0.")
+  set(target_version "7.1")
+  if (NOT (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER ${target_version} OR
+           CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL ${target_version}))
+    message(FATAL_ERROR "Requires GCC >= ${target_version}.")
   endif()
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-  execute_process(
-    COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
-    OUTPUT_VARIABLE CLANG_VERSION
-    )
-  if (NOT (CLANG_VERSION VERSION_GREATER 3.7 OR CLANG_VERSION VERSION_EQUAL 3.7))
-    message(FATAL_ERROR "Requires Clang >= 3.7.")
+  # Xcode 10 was based on Clang 6 which has full C++17 support.
+  if (APPLE AND "${CMAKE_CXX_COMPILER}" MATCHES "Xcode")
+    set(target_version "10.0")
+  else()
+    set(target_version "6")
+  endif()
+
+  if (NOT (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL ${target_version} OR
+           CMAKE_CXX_COMPILER_VERSION VERSION_GREATER ${target_version}))
+    message(FATAL_ERROR "Requires ${CMAKE_CXX_COMPILER_ID} >= ${target_version}")
   elseif (APPLE)
     # Use libstdc++ on Linux but libc++ on macOS.
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
   endif()
-elseif (MSVC AND MSVC14)
-  # C++14 support is implicitly enabled.
+elseif (MSVC AND (${MSVC_VERSION} GREATER_EQUAL 1910))
+  # Requires at least VS2017 (v1910).
+  # C++17 support is implicitly enabled.
 else()
-  message(FATAL_ERROR "Your compiler does not support C++14 - aborting!")
+  message(FATAL_ERROR "Your compiler does not support C++17 - aborting!")
 endif()
