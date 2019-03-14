@@ -95,7 +95,7 @@ if (found_cppcheck)
   add_custom_target(
     cppcheck
 
-    cppcheck --enable=all --std=c++11 --language=c++ --project=${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/sigs.h --xml 2> cppcheck.xml && python ${CMAKE_SOURCE_DIR}/scripts/cppcheck-htmlreport.py --file=cppcheck.xml --report-dir=cppcheck
+    cppcheck --enable=all --force -j 4 --std=c++14 --language=c++ --project=${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/sigs.h --xml 2> cppcheck.xml && python ${CMAKE_SOURCE_DIR}/scripts/cppcheck-htmlreport.py --file=cppcheck.xml --report-dir=cppcheck
 
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Running cppcheck"
