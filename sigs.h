@@ -78,7 +78,7 @@ namespace sigs {
 template <typename... Args>
 struct Use final {
   template <typename Cls, typename Ret>
-  [[nodiscard]] static auto overloadOf(Ret (Cls::*MembFunc)(Args...))
+  [[nodiscard]] static inline auto overloadOf(Ret (Cls::*MembFunc)(Args...))
   {
     return MembFunc;
   }
@@ -305,7 +305,7 @@ public:
   }
 
 private:
-  [[nodiscard]] Connection makeConnection()
+  [[nodiscard]] inline Connection makeConnection()
   {
     auto conn = std::make_shared<ConnectionBase>();
     conn->deleter = [this, conn] { this->disconnect(conn); };
@@ -323,18 +323,18 @@ private:
   }
 
   template <typename Instance, typename MembFunc, std::size_t... Ns>
-  [[nodiscard]] Slot bindMf(Instance *instance, MembFunc Instance::*mf, Seq<Ns...>)
+  [[nodiscard]] inline Slot bindMf(Instance *instance, MembFunc Instance::*mf, Seq<Ns...>)
   {
     return std::bind(mf, instance, Placeholder<Ns>()...);
   }
 
   template <typename Instance, typename MembFunc>
-  [[nodiscard]] Slot bindMf(Instance *instance, MembFunc Instance::*mf)
+  [[nodiscard]] inline Slot bindMf(Instance *instance, MembFunc Instance::*mf)
   {
     return bindMf(instance, mf, MakeSeq<sizeof...(Args)>());
   }
 
-  [[nodiscard]] static constexpr bool isVoidReturn()
+  [[nodiscard]] static inline constexpr bool isVoidReturn()
   {
     return std::is_void<ReturnType>::value;
   }
