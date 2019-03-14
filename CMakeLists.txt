@@ -62,6 +62,8 @@ include(CTest)
 enable_testing()
 add_subdirectory(tests)
 
+add_subdirectory(examples)
+
 # Requires llvm/clang v4+!
 # Setup: cmake -G <GENERATOR> -DCODE_COVERAGE=ON ../../
 if (CODE_COVERAGE)
