@@ -133,6 +133,20 @@ TEST(General, connectSignalToSignal)
   EXPECT_EQ(i, 1);
 }
 
+TEST(General, disconnectSignalFromSignal)
+{
+  sigs::Signal<void(int &)> s1;
+  s1.connect([](int &i) { i++; });
+
+  decltype(s1) s2;
+  s2.connect(s1);
+  s2.disconnect(s1);
+
+  int i = 0;
+  s2(i);
+  EXPECT_EQ(i, 0);
+}
+
 TEST(General, ambiguousMembers)
 {
   class Ambiguous {
