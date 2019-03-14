@@ -100,7 +100,7 @@ private:
 
 using Connection = std::shared_ptr<ConnectionBase>;
 
-namespace {
+namespace detail {
 
 /// VoidableFunction is used internally to generate a function type depending on whether the return
 /// type of the signal is non-void.
@@ -117,7 +117,7 @@ public:
   using func = std::function<void()>;
 };
 
-} // namespace
+} // namespace detail
 
 template <typename>
 class Signal;
@@ -287,7 +287,7 @@ public:
     }
   }
 
-  template <typename RetFunc = typename VoidableFunction<ReturnType>::func>
+  template <typename RetFunc = typename detail::VoidableFunction<ReturnType>::func>
   void operator()(const RetFunc &retFunc, Args &&... args)
   {
     static_assert(!isVoidReturn(), "Must have non-void return type!");
