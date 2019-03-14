@@ -11,7 +11,7 @@ TEST(General, instantiate)
   sigs::Signal<int()> s3;
 }
 
-void addOne(int &i)
+inline void addOne(int &i)
 {
   i++;
 }

@@ -15,6 +15,7 @@ add_executable(
   main.cc
 
   General.cc
+  Interface.cc
   )
 
 add_test(

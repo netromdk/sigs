@@ -125,6 +125,7 @@ class Signal;
 template <typename Ret, typename... Args>
 class Signal<Ret(Args...)> final {
   using Slot = std::function<Ret(Args...)>;
+  using SignalType = Signal<Ret(Args...)>;
 
   class Entry final {
   public:
@@ -167,6 +168,48 @@ class Signal<Ret(Args...)> final {
 public:
   using ReturnType = Ret;
   using SlotType = Slot;
+
+  /// Interface that only exposes connect and disconnect methods.
+  class Interface final {
+  public:
+    Interface(SignalType *sig) : sig(sig)
+    {
+    }
+
+    inline Connection connect(const Slot &slot)
+    {
+      return sig->connect(slot);
+    }
+
+    inline Connection connect(Slot &&slot)
+    {
+      return sig->connect(slot);
+    }
+
+    template <typename Instance, typename MembFunc>
+    inline Connection connect(Instance *instance, MembFunc Instance::*mf)
+    {
+      return sig->connect(instance, mf);
+    }
+
+    inline Connection connect(Signal &signal)
+    {
+      return sig->connect(signal);
+    }
+
+    inline void disconnect(std::optional<Connection> conn)
+    {
+      sig->disconnect(conn);
+    }
+
+    inline void disconnect(Signal &signal)
+    {
+      sig->disconnect(signal);
+    }
+
+  private:
+    SignalType *sig = nullptr;
+  };
 
   Signal()
   {
@@ -302,6 +345,11 @@ public:
         retFunc(entry.slot()(std::forward<Args>(args)...));
       }
     }
+  }
+
+  [[nodiscard]] inline std::unique_ptr<Interface> interface()
+  {
+    return std::make_unique<Interface>(this);
   }
 
 private:
