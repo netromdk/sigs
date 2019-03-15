@@ -282,10 +282,7 @@ public:
   void clear()
   {
     Lock lock(entriesMutex);
-    auto end = entries.end();
-    for (auto it = entries.begin(); it != end; it++) {
-      eraseEntry(it);
-    }
+    eraseEntries();
   }
 
   void disconnect(std::optional<Connection> conn)
@@ -296,24 +293,13 @@ public:
     }
 
     Lock lock(entriesMutex);
-
-    auto end = entries.end();
-    for (auto it = entries.begin(); it != end; it++) {
-      if (it->conn() == conn) {
-        eraseEntry(it);
-      }
-    }
+    eraseEntries([conn](auto it) { return it->conn() == conn; });
   }
 
   void disconnect(Signal &signal)
   {
     Lock lock(entriesMutex);
-    auto end = entries.end();
-    for (auto it = entries.begin(); it != end; it++) {
-      if (it->signal() == &signal) {
-        eraseEntry(it);
-      }
-    }
+    eraseEntries([sig = &signal](auto it) { return it->signal() == sig; });
   }
 
   void operator()(Args &&... args)
@@ -361,13 +347,27 @@ private:
   }
 
   /// Expects entries container to be locked beforehand.
-  void eraseEntry(typename Cont::iterator it)
+  typename Cont::iterator eraseEntry(typename Cont::iterator it)
   {
     auto conn = it->conn();
     if (conn) {
       conn->deleter = nullptr;
     }
-    entries.erase(it);
+    return entries.erase(it);
+  }
+
+  void eraseEntries(std::function<bool(typename Cont::iterator)> pred = [](auto) { return true; })
+  {
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+      if (pred(it)) {
+        it = eraseEntry(it);
+      }
+
+      // Avoid iterator-advance-past-end runtime errors.
+      if (it == entries.end()) {
+        break;
+      }
+    }
   }
 
   template <typename Instance, typename MembFunc, std::size_t... Ns>
