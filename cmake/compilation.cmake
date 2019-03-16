@@ -3,6 +3,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Some release optimization flags for GCC/Clang.
 if (NOT WIN32)
+  # Always show all warnings.
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -pedantic")
+
   # Clang/GCC
   set(REL_OPTS "-pipe -fvisibility=hidden -fvisibility-inlines-hidden -ffast-math -funroll-loops")
 
