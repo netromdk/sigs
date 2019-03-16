@@ -6,6 +6,9 @@ if (NOT WIN32)
   # Always show all warnings.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -pedantic")
 
+  # Certain warnings are promoted to errors.
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=unused-variable -Werror=unused-value -Werror=return-type")
+
   # Clang/GCC
   set(REL_OPTS "-pipe -fvisibility=hidden -fvisibility-inlines-hidden -ffast-math -funroll-loops")
 
