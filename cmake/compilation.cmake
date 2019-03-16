@@ -15,6 +15,10 @@ if (NOT WIN32)
   # Clang only
   if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wconversion -Werror=conversion -Wno-sign-conversion -Werror=nonportable-include-path -Werror=pessimizing-move -Werror=infinite-recursion")
+
+    if (EVERY_WARNING)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything")
+    endif()
   endif()
 
   # GCC only
