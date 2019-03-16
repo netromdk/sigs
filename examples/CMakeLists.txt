@@ -11,3 +11,8 @@ add_executable(
   interface
   Interface.cc
   )
+
+add_executable(
+  return_values
+  ReturnValues.cc
+  )
