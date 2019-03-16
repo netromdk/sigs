@@ -172,43 +172,43 @@ public:
   /// Interface that only exposes connect and disconnect methods.
   class Interface final {
   public:
-    Interface(SignalType *sig) : sig(sig)
+    Interface(SignalType *sig) : sig_(sig)
     {
     }
 
     inline Connection connect(const Slot &slot)
     {
-      return sig->connect(slot);
+      return sig_->connect(slot);
     }
 
     inline Connection connect(Slot &&slot)
     {
-      return sig->connect(slot);
+      return sig_->connect(slot);
     }
 
     template <typename Instance, typename MembFunc>
     inline Connection connect(Instance *instance, MembFunc Instance::*mf)
     {
-      return sig->connect(instance, mf);
+      return sig_->connect(instance, mf);
     }
 
     inline Connection connect(Signal &signal)
     {
-      return sig->connect(signal);
+      return sig_->connect(signal);
     }
 
     inline void disconnect(std::optional<Connection> conn)
     {
-      sig->disconnect(conn);
+      sig_->disconnect(conn);
     }
 
     inline void disconnect(Signal &signal)
     {
-      sig->disconnect(signal);
+      sig_->disconnect(signal);
     }
 
   private:
-    SignalType *sig = nullptr;
+    SignalType *sig_ = nullptr;
   };
 
   Signal() = default;
