@@ -107,6 +107,7 @@ endif()
 
 message(STATUS "--------------------------------------------------")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "Compiler: ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID})")
 
 if (CODE_COVERAGE)
   message(STATUS "Code coverage: ${CODE_COVERAGE} (target: codecov)")
