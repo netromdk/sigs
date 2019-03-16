@@ -211,9 +211,7 @@ public:
     SignalType *sig = nullptr;
   };
 
-  Signal()
-  {
-  }
+  Signal() = default;
 
   virtual ~Signal()
   {
