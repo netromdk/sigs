@@ -347,7 +347,7 @@ private:
   }
 
   /// Expects entries container to be locked beforehand.
-  typename Cont::iterator eraseEntry(typename Cont::iterator it)
+  [[nodiscard]] typename Cont::iterator eraseEntry(typename Cont::iterator it)
   {
     auto conn = it->conn();
     if (conn) {
