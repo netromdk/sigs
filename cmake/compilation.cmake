@@ -12,6 +12,11 @@ if (NOT WIN32)
   # Clang/GCC
   set(REL_OPTS "-pipe -fvisibility=hidden -fvisibility-inlines-hidden -ffast-math -funroll-loops")
 
+  # Clang only
+  if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wconversion -Werror=conversion -Wno-sign-conversion -Werror=nonportable-include-path -Werror=pessimizing-move -Werror=infinite-recursion")
+  endif()
+
   # GCC only
   if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
     set(REL_OPTS "${REL_OPTS} -fno-implement-inlines")
