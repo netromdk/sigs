@@ -317,7 +317,7 @@ public:
   template <typename RetFunc = typename detail::VoidableFunction<ReturnType>::func>
   void operator()(const RetFunc &retFunc, Args &&... args)
   {
-    static_assert(!isVoidReturn(), "Must have non-void return type!");
+    static_assert(!std::is_void_v<ReturnType>, "Must have non-void return type!");
 
     Lock lock(entriesMutex);
     for (auto &entry : entries) {
@@ -378,11 +378,6 @@ private:
   [[nodiscard]] inline Slot bindMf(Instance *instance, MembFunc Instance::*mf)
   {
     return bindMf(instance, mf, MakeSeq<sizeof...(Args)>());
-  }
-
-  [[nodiscard]] static inline constexpr bool isVoidReturn()
-  {
-    return std::is_void<ReturnType>::value;
   }
 
   Cont entries;
