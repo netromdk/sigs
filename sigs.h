@@ -78,7 +78,7 @@ namespace sigs {
 template <typename... Args>
 struct Use final {
   template <typename Cls, typename Ret>
-  [[nodiscard]] static inline auto overloadOf(Ret (Cls::*MembFunc)(Args...))
+  [[nodiscard]] static inline auto overloadOf(Ret (Cls::*MembFunc)(Args...)) noexcept
   {
     return MembFunc;
   }
@@ -89,7 +89,7 @@ class ConnectionBase final {
   friend class Signal;
 
 public:
-  void disconnect()
+  void disconnect() noexcept
   {
     if (deleter) deleter();
   }
@@ -129,29 +129,30 @@ class Signal<Ret(Args...)> final {
 
   class Entry final {
   public:
-    Entry(const Slot &slot, Connection conn) : slot_(slot), conn_(conn), signal_(nullptr)
+    Entry(const Slot &slot, Connection conn) noexcept : slot_(slot), conn_(conn), signal_(nullptr)
     {
     }
 
-    Entry(Slot &&slot, Connection conn) : slot_(std::move(slot)), conn_(conn), signal_(nullptr)
+    Entry(Slot &&slot, Connection conn) noexcept
+      : slot_(std::move(slot)), conn_(conn), signal_(nullptr)
     {
     }
 
-    Entry(Signal *signal, Connection conn) : conn_(conn), signal_(signal)
+    Entry(Signal *signal, Connection conn) noexcept : conn_(conn), signal_(signal)
     {
     }
 
-    const Slot &slot() const
+    const Slot &slot() const noexcept
     {
       return slot_;
     }
 
-    Signal *signal() const
+    Signal *signal() const noexcept
     {
       return signal_;
     }
 
-    Connection conn() const
+    Connection conn() const noexcept
     {
       return conn_;
     }
@@ -172,37 +173,37 @@ public:
   /// Interface that only exposes connect and disconnect methods.
   class Interface final {
   public:
-    Interface(SignalType *sig) : sig_(sig)
+    Interface(SignalType *sig) noexcept : sig_(sig)
     {
     }
 
-    inline Connection connect(const Slot &slot)
+    inline Connection connect(const Slot &slot) noexcept
     {
       return sig_->connect(slot);
     }
 
-    inline Connection connect(Slot &&slot)
+    inline Connection connect(Slot &&slot) noexcept
     {
       return sig_->connect(slot);
     }
 
     template <typename Instance, typename MembFunc>
-    inline Connection connect(Instance *instance, MembFunc Instance::*mf)
+    inline Connection connect(Instance *instance, MembFunc Instance::*mf) noexcept
     {
       return sig_->connect(instance, mf);
     }
 
-    inline Connection connect(Signal &signal)
+    inline Connection connect(Signal &signal) noexcept
     {
       return sig_->connect(signal);
     }
 
-    inline void disconnect(std::optional<Connection> conn)
+    inline void disconnect(std::optional<Connection> conn) noexcept
     {
       sig_->disconnect(conn);
     }
 
-    inline void disconnect(Signal &signal)
+    inline void disconnect(Signal &signal) noexcept
     {
       sig_->disconnect(signal);
     }
@@ -211,9 +212,9 @@ public:
     SignalType *sig_ = nullptr;
   };
 
-  Signal() = default;
+  Signal() noexcept = default;
 
-  virtual ~Signal()
+  virtual ~Signal() noexcept
   {
     Lock lock(entriesMutex);
     for (auto &entry : entries) {
@@ -224,14 +225,14 @@ public:
     }
   }
 
-  Signal(const Signal &rhs)
+  Signal(const Signal &rhs) noexcept
   {
     Lock lock1(entriesMutex);
     Lock lock2(const_cast<Signal &>(rhs).entriesMutex);
     entries = rhs.entries;
   }
 
-  Signal &operator=(const Signal &rhs)
+  Signal &operator=(const Signal &rhs) noexcept
   {
     Lock lock1(entriesMutex);
     Lock lock2(const_cast<Signal &>(rhs).entriesMutex);
@@ -242,7 +243,7 @@ public:
   Signal(Signal &&rhs) = default;
   Signal &operator=(Signal &&rhs) = default;
 
-  Connection connect(const Slot &slot)
+  Connection connect(const Slot &slot) noexcept
   {
     Lock lock(entriesMutex);
     auto conn = makeConnection();
@@ -250,7 +251,7 @@ public:
     return conn;
   }
 
-  Connection connect(Slot &&slot)
+  Connection connect(Slot &&slot) noexcept
   {
     Lock lock(entriesMutex);
     auto conn = makeConnection();
@@ -259,7 +260,7 @@ public:
   }
 
   template <typename Instance, typename MembFunc>
-  Connection connect(Instance *instance, MembFunc Instance::*mf)
+  Connection connect(Instance *instance, MembFunc Instance::*mf) noexcept
   {
     Lock lock(entriesMutex);
     auto slot = bindMf(instance, mf);
@@ -269,7 +270,7 @@ public:
   }
 
   /// Connecting a signal will trigger all of its slots when this signal is triggered.
-  Connection connect(Signal &signal)
+  Connection connect(Signal &signal) noexcept
   {
     Lock lock(entriesMutex);
     auto conn = makeConnection();
@@ -277,13 +278,13 @@ public:
     return conn;
   }
 
-  void clear()
+  void clear() noexcept
   {
     Lock lock(entriesMutex);
     eraseEntries();
   }
 
-  void disconnect(std::optional<Connection> conn)
+  void disconnect(std::optional<Connection> conn) noexcept
   {
     if (!conn) {
       clear();
@@ -294,13 +295,13 @@ public:
     eraseEntries([conn](auto it) { return it->conn() == conn; });
   }
 
-  void disconnect(Signal &signal)
+  void disconnect(Signal &signal) noexcept
   {
     Lock lock(entriesMutex);
     eraseEntries([sig = &signal](auto it) { return it->signal() == sig; });
   }
 
-  void operator()(Args &&... args)
+  void operator()(Args &&... args) noexcept
   {
     Lock lock(entriesMutex);
     for (auto &entry : entries) {
@@ -315,7 +316,7 @@ public:
   }
 
   template <typename RetFunc = typename detail::VoidableFunction<ReturnType>::func>
-  void operator()(const RetFunc &retFunc, Args &&... args)
+  void operator()(const RetFunc &retFunc, Args &&... args) noexcept
   {
     static_assert(!std::is_void_v<ReturnType>, "Must have non-void return type!");
 
@@ -331,13 +332,13 @@ public:
     }
   }
 
-  [[nodiscard]] inline std::unique_ptr<Interface> interface()
+  [[nodiscard]] inline std::unique_ptr<Interface> interface() noexcept
   {
     return std::make_unique<Interface>(this);
   }
 
 private:
-  [[nodiscard]] inline Connection makeConnection()
+  [[nodiscard]] inline Connection makeConnection() noexcept
   {
     auto conn = std::make_shared<ConnectionBase>();
     conn->deleter = [this, conn] { this->disconnect(conn); };
@@ -345,7 +346,7 @@ private:
   }
 
   /// Expects entries container to be locked beforehand.
-  [[nodiscard]] typename Cont::iterator eraseEntry(typename Cont::iterator it)
+  [[nodiscard]] typename Cont::iterator eraseEntry(typename Cont::iterator it) noexcept
   {
     auto conn = it->conn();
     if (conn) {
@@ -354,7 +355,9 @@ private:
     return entries.erase(it);
   }
 
-  void eraseEntries(std::function<bool(typename Cont::iterator)> pred = [](auto) { return true; })
+  void eraseEntries(std::function<bool(typename Cont::iterator)> pred = [](auto) {
+    return true;
+  }) noexcept
   {
     for (auto it = entries.begin(); it != entries.end(); ++it) {
       if (pred(it)) {
@@ -369,13 +372,13 @@ private:
   }
 
   template <typename Instance, typename MembFunc, std::size_t... Ns>
-  [[nodiscard]] inline Slot bindMf(Instance *instance, MembFunc Instance::*mf, Seq<Ns...>)
+  [[nodiscard]] inline Slot bindMf(Instance *instance, MembFunc Instance::*mf, Seq<Ns...>) noexcept
   {
     return std::bind(mf, instance, Placeholder<Ns>()...);
   }
 
   template <typename Instance, typename MembFunc>
-  [[nodiscard]] inline Slot bindMf(Instance *instance, MembFunc Instance::*mf)
+  [[nodiscard]] inline Slot bindMf(Instance *instance, MembFunc Instance::*mf) noexcept
   {
     return bindMf(instance, mf, MakeSeq<sizeof...(Args)>());
   }
