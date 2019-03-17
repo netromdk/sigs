@@ -218,8 +218,7 @@ public:
   {
     Lock lock(entriesMutex);
     for (auto &entry : entries) {
-      auto conn = entry.conn();
-      if (conn) {
+      if (auto conn = entry.conn(); conn) {
         conn->deleter = nullptr;
       }
     }
@@ -305,8 +304,7 @@ public:
   {
     Lock lock(entriesMutex);
     for (auto &entry : entries) {
-      auto *sig = entry.signal();
-      if (sig) {
+      if (auto *sig = entry.signal(); sig) {
         (*sig)(std::forward<Args>(args)...);
       }
       else {
@@ -322,8 +320,7 @@ public:
 
     Lock lock(entriesMutex);
     for (auto &entry : entries) {
-      auto *sig = entry.signal();
-      if (sig) {
+      if (auto *sig = entry.signal(); sig) {
         (*sig)(retFunc, std::forward<Args>(args)...);
       }
       else {
