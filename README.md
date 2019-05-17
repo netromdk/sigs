@@ -13,6 +13,7 @@ Table of contents
 * [Examples](#examples)
 * [Ambiguous types](#ambiguous-types)
 * [Return values](#return-values)
+* [Signal interface](#signal-interface)
 
 Examples
 ========
@@ -177,4 +178,40 @@ s.connect([] { return 3; });
 int sum = 0;
 s([&sum](int retVal) { sum += retVal; });
 // sum is now = 1 + 2 + 3 = 6
+```
+
+Signal interface
+================
+When a signal is used in an abstraction one most often doesn't want it exposed directly as a public member since it destroys encapsulation. `sigs::Signal::interface()` can be used instead to only expose connect and disconnect methods of the signal - it is a `std::unique_ptr<sigs::Signal::Interface>` wrapper instance.
+
+The example shows a button abstraction where actions can easily be added or removed while preserving the encapsulation of the signal:
+```c++
+class Button {
+public:
+  void click()
+  {
+    clickSignal_();
+  }
+
+  [[nodiscard]] auto clickSignal()
+  {
+    return clickSignal_.interface();
+  }
+
+private:
+  sigs::Signal<void()> clickSignal_;
+};
+
+int main()
+{
+  Button btn;
+  btn.clickSignal()->connect([] { std::cout << "direct fn" << std::endl; });
+  btn.clickSignal()->connect([] { std::cout << "direct fn 2" << std::endl; });
+
+  auto conn = btn.clickSignal()->connect([] { std::cout << "you won't see me" << std::endl; });
+  conn->disconnect();
+
+  btn.click();
+  return 0;
+}
 ```
