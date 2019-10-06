@@ -147,6 +147,15 @@ TEST(General, disconnectSignalFromSignal)
   EXPECT_EQ(i, 0);
 }
 
+// Check for debug assertion.
+#ifndef NDEBUG
+TEST(General, disconnectSignalFromSelf)
+{
+  sigs::Signal<void()> s;
+  EXPECT_DEATH(s.disconnect(s), "Disconnecting from self has no effect.");
+}
+#endif
+
 TEST(General, ambiguousMembers)
 {
   class Ambiguous {

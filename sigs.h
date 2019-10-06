@@ -26,6 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef SIGS_SIGNAL_SLOT_H
 #define SIGS_SIGNAL_SLOT_H
 
+#include <cassert>
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
@@ -296,6 +297,8 @@ public:
 
   void disconnect(Signal &signal) noexcept
   {
+    assert(&signal != this && "Disconnecting from self has no effect.");
+
     Lock lock(entriesMutex);
     eraseEntries([sig = &signal](auto it) { return it->signal() == sig; });
   }
