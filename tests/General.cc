@@ -210,3 +210,36 @@ TEST(General, sameSlotManyConnections)
   s();
   EXPECT_EQ(calls, 3);
 }
+
+TEST(General, clearEquivalentToAllDisconnects)
+{
+  int calls = 0;
+  const auto slot = [&calls] { calls++; };
+
+  sigs::Signal<void()> s;
+
+  {
+    calls = 0;
+    auto conn1 = s.connect(slot);
+    auto conn2 = s.connect(slot);
+    s();
+    EXPECT_EQ(calls, 2);
+
+    s.clear();
+    s();
+    EXPECT_EQ(calls, 2);
+  }
+
+  {
+    calls = 0;
+    auto conn1 = s.connect(slot);
+    auto conn2 = s.connect(slot);
+    s();
+    EXPECT_EQ(calls, 2);
+
+    s.disconnect(conn1);
+    s.disconnect(conn2);
+    s();
+    EXPECT_EQ(calls, 2);
+  }
+}
