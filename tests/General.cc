@@ -190,3 +190,23 @@ TEST(General, returnValues)
 
   EXPECT_EQ(sum, 1 + 2 + 3);
 }
+
+TEST(General, sameSlotManyConnections)
+{
+  int calls = 0;
+  const auto slot = [&calls] { calls++; };
+
+  sigs::Signal<void()> s;
+  s.connect(slot);
+  s();
+  EXPECT_EQ(calls, 1);
+
+  s.connect(slot);
+  s();
+  EXPECT_EQ(calls, 3);
+
+  // This yielded 4 calls when eraseEntries() didn't clear correctly.
+  s.clear();
+  s();
+  EXPECT_EQ(calls, 3);
+}

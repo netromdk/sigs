@@ -356,14 +356,12 @@ private:
     return true;
   }) noexcept
   {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (auto it = entries.begin(); it != entries.end();) {
       if (pred(it)) {
         it = eraseEntry(it);
       }
-
-      // Avoid iterator-advance-past-end runtime errors.
-      if (it == entries.end()) {
-        break;
+      else {
+        ++it;
       }
     }
   }
