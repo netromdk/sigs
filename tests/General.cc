@@ -252,3 +252,28 @@ TEST(General, clearEquivalentToAllDisconnects)
     EXPECT_EQ(calls, 2);
   }
 }
+
+TEST(General, size)
+{
+  sigs::Signal<void()> s;
+  ASSERT_EQ(0UL, s.size());
+
+  s.connect([] {});
+  s.connect([] {});
+  ASSERT_EQ(2UL, s.size());
+
+  s.clear();
+  ASSERT_EQ(0UL, s.size());
+}
+
+TEST(General, empty)
+{
+  sigs::Signal<void()> s;
+  ASSERT_TRUE(s.empty());
+
+  s.connect([] {});
+  ASSERT_FALSE(s.empty());
+
+  s.clear();
+  ASSERT_TRUE(s.empty());
+}

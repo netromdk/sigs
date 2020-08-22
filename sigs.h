@@ -243,6 +243,17 @@ public:
   Signal(Signal &&rhs) = default;
   Signal &operator=(Signal &&rhs) = default;
 
+  std::size_t size() const noexcept
+  {
+    Lock lock(entriesMutex);
+    return entries.size();
+  }
+
+  bool empty() const noexcept
+  {
+    return 0 == size();
+  }
+
   Connection connect(const Slot &slot) noexcept
   {
     Lock lock(entriesMutex);
@@ -382,7 +393,7 @@ private:
   }
 
   Cont entries;
-  std::mutex entriesMutex;
+  mutable std::mutex entriesMutex;
 };
 
 } // namespace sigs
