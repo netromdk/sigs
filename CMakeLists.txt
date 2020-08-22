@@ -108,7 +108,11 @@ if (found_cppcheck)
     cppcheck
 
     # unusedFunction can't be used with -j for some reason.
-    cppcheck --enable=warning,performance,information -j 8 --std=c++14 --language=c++ --report-progress --project=${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/sigs.h --xml 2> cppcheck.xml && python ${CMAKE_SOURCE_DIR}/scripts/cppcheck-htmlreport.py --file=cppcheck.xml --report-dir=cppcheck
+    cppcheck --enable=all -j ${CPU_COUNT} --std=c++17 --language=c++ --inconclusive
+             --project=${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json
+             --suppress=*:${CMAKE_SOURCE_DIR}/tests/gtest/*
+             ${CMAKE_SOURCE_DIR}/sigs.h --xml 2> cppcheck.xml &&
+      python3 ${CMAKE_SOURCE_DIR}/scripts/cppcheck-htmlreport.py --file=cppcheck.xml --report-dir=cppcheck
 
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Running cppcheck"
