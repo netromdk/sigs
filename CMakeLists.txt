@@ -76,6 +76,7 @@ if (CODE_COVERAGE)
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Generating test code coverage report"
     DEPENDS ${testName}
+    USES_TERMINAL
     )
 endif()
 
@@ -88,6 +89,7 @@ if (STATIC_ANALYZER)
 
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Doing static analysis"
+    USES_TERMINAL
     )
 endif()
 
@@ -103,6 +105,7 @@ if (found_cppcheck)
 
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Running cppcheck"
+    USES_TERMINAL
     )
 endif()
 
