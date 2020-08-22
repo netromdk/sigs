@@ -295,7 +295,9 @@ public:
     eraseEntries();
   }
 
-  void disconnect(std::optional<Connection> conn) noexcept
+  /// Disconnects \p conn from signal.
+  /** If no value is given, all slots are disconnected. */
+  void disconnect(std::optional<Connection> conn = std::nullopt) noexcept
   {
     if (!conn) {
       clear();

@@ -277,3 +277,12 @@ TEST(General, empty)
   s.clear();
   ASSERT_TRUE(s.empty());
 }
+
+TEST(General, disconnectWithNoSlotClearsAll)
+{
+  sigs::Signal<void()> s;
+  s.connect([] {});
+  s.connect([] {});
+  s.disconnect();
+  ASSERT_TRUE(s.empty());
+}
