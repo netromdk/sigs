@@ -41,7 +41,7 @@ TEST(Interface, functor)
 {
   class AddOneFunctor {
   public:
-    void operator()(int &i)
+    void operator()(int &i) const
     {
       i++;
     }
@@ -60,7 +60,7 @@ TEST(Interface, instanceMethod)
 {
   class Foo {
   public:
-    void test(int &i)
+    void test(int &i) const
     {
       i++;
     }

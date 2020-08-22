@@ -44,7 +44,7 @@ TEST(General, functor)
 {
   class AddOneFunctor {
   public:
-    void operator()(int &i)
+    void operator()(int &i) const
     {
       i++;
     }
@@ -63,7 +63,7 @@ TEST(General, instanceMethod)
 {
   class Foo {
   public:
-    void test(int &i)
+    void test(int &i) const
     {
       i++;
     }

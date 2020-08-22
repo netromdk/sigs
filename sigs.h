@@ -174,7 +174,7 @@ public:
   /// Interface that only exposes connect and disconnect methods.
   class Interface final {
   public:
-    Interface(SignalType *sig) noexcept : sig_(sig)
+    explicit Interface(SignalType *sig) noexcept : sig_(sig)
     {
     }
 
@@ -225,7 +225,7 @@ public:
     }
   }
 
-  Signal(const Signal &rhs) noexcept
+  Signal(const Signal &rhs) noexcept : Signal()
   {
     Lock lock1(entriesMutex);
     Lock lock2(const_cast<Signal &>(rhs).entriesMutex);
