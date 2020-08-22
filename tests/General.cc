@@ -200,6 +200,22 @@ TEST(General, returnValues)
   EXPECT_EQ(sum, 1 + 2 + 3);
 }
 
+TEST(General, returnValuesWithSignals)
+{
+  sigs::Signal<int()> s, s2, s3;
+  s3.connect([] { return 1; });
+  s2.connect([] { return 2; });
+  s2.connect([] { return 3; });
+  s.connect(s2);
+  s.connect(s3);
+  s.connect([] { return 4; });
+
+  int sum = 0;
+  s([&sum](int retVal) { sum += retVal; });
+
+  EXPECT_EQ(sum, 1 + 2 + 3 + 4);
+}
+
 TEST(General, sameSlotManyConnections)
 {
   int calls = 0;
