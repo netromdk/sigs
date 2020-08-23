@@ -270,7 +270,7 @@ public:
   Signal(const Signal &rhs) noexcept : Signal()
   {
     Lock lock1(entriesMutex);
-    Lock lock2(const_cast<Signal &>(rhs).entriesMutex);
+    Lock lock2(rhs.entriesMutex);
     entries = rhs.entries;
     blocked_ = rhs.blocked_;
   }
@@ -278,7 +278,7 @@ public:
   Signal &operator=(const Signal &rhs) noexcept
   {
     Lock lock1(entriesMutex);
-    Lock lock2(const_cast<Signal &>(rhs).entriesMutex);
+    Lock lock2(rhs.entriesMutex);
     entries = rhs.entries;
     blocked_ = rhs.blocked_;
     return *this;
