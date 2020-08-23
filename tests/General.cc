@@ -272,14 +272,14 @@ TEST(General, clearEquivalentToAllDisconnects)
 TEST(General, size)
 {
   sigs::Signal<void()> s;
-  ASSERT_EQ(0UL, s.size());
+  ASSERT_EQ(s.size(), 0);
 
   s.connect([] {});
   s.connect([] {});
-  ASSERT_EQ(2UL, s.size());
+  ASSERT_EQ(s.size(), 2);
 
   s.clear();
-  ASSERT_EQ(0UL, s.size());
+  ASSERT_EQ(s.size(), 0);
 }
 
 TEST(General, empty)
