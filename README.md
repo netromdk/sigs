@@ -14,6 +14,7 @@ Table of contents
 * [Ambiguous types](#ambiguous-types)
 * [Return values](#return-values)
 * [Signal interface](#signal-interface)
+* [Blocking signals and slots](#blocking-signals-and-slots)
 
 Examples
 ========
@@ -214,4 +215,34 @@ int main()
   btn.click();
   return 0;
 }
+```
+
+Blocking signals and slots
+==========================
+Sometimes it is necessary to block a signal, and any recursive signals, from triggering. That is achieved through `sigs::Signal::setBlocked(bool)` and `sigs::Signal::blocked()`:
+```c++
+sigs::Signal<void()> s;
+s.connect([] { /* .. */ });
+s.connect([] { /* .. */ });
+s.setBlocked(true);
+
+// No slots will be triggered since the signal is blocked.
+s();
+```
+
+To make things simpler, the `sigs::SignalBlocker` class utilizes the RAII idiom to block/unblock via its own scoped lifetime:
+```c++
+sigs::Signal<void()> s;
+s.connect([] { /* .. */ });
+s.connect([] { /* .. */ });
+
+{
+  sigs::SignalBlocker blocker(s);
+
+  // No slots will be triggered since the signal is blocked.
+  s();
+}
+
+// All connected slots are triggered since the signal is no longer blocked.
+s();
 ```
