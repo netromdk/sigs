@@ -388,3 +388,28 @@ TEST(General, blockedSignals)
   s();
   ASSERT_EQ(calls, 2);
 }
+
+TEST(General, copyConstructible)
+{
+  sigs::Signal<void()> s;
+  s.connect([] {});
+  s.connect([] {});
+  s.setBlocked(true);
+
+  decltype(s) s2(s);
+  ASSERT_EQ(s2.size(), 2);
+  ASSERT_TRUE(s2.blocked());
+}
+
+TEST(General, copyAssignable)
+{
+  sigs::Signal<void()> s;
+  s.connect([] {});
+  s.connect([] {});
+  s.setBlocked(true);
+
+  decltype(s) s2;
+  s2 = s;
+  ASSERT_EQ(s2.size(), 2);
+  ASSERT_TRUE(s2.blocked());
+}

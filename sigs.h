@@ -272,7 +272,9 @@ public:
     Lock lock1(entriesMutex);
     Lock lock2(rhs.entriesMutex);
     entries = rhs.entries;
-    blocked_ = rhs.blocked_;
+
+    // `atomic_bool` can't be copied, so copy value.
+    blocked_ = rhs.blocked_.load();
   }
 
   Signal &operator=(const Signal &rhs) noexcept
@@ -280,7 +282,7 @@ public:
     Lock lock1(entriesMutex);
     Lock lock2(rhs.entriesMutex);
     entries = rhs.entries;
-    blocked_ = rhs.blocked_;
+    blocked_ = rhs.blocked_.load();
     return *this;
   }
 
