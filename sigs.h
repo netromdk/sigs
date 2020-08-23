@@ -26,6 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef SIGS_SIGNAL_SLOT_H
 #define SIGS_SIGNAL_SLOT_H
 
+#include <atomic>
 #include <cassert>
 #include <cstddef>
 #include <functional>
@@ -230,6 +231,7 @@ public:
     Lock lock1(entriesMutex);
     Lock lock2(const_cast<Signal &>(rhs).entriesMutex);
     entries = rhs.entries;
+    blocked_ = rhs.blocked_;
   }
 
   Signal &operator=(const Signal &rhs) noexcept
@@ -237,6 +239,7 @@ public:
     Lock lock1(entriesMutex);
     Lock lock2(const_cast<Signal &>(rhs).entriesMutex);
     entries = rhs.entries;
+    blocked_ = rhs.blocked_;
     return *this;
   }
 
@@ -318,6 +321,8 @@ public:
 
   void operator()(Args &&... args) noexcept
   {
+    if (blocked()) return;
+
     Lock lock(entriesMutex);
     for (auto &entry : entries) {
       if (auto *sig = entry.signal(); sig) {
@@ -334,6 +339,8 @@ public:
   {
     static_assert(!std::is_void_v<ReturnType>, "Must have non-void return type!");
 
+    if (blocked()) return;
+
     Lock lock(entriesMutex);
     for (auto &entry : entries) {
       if (auto *sig = entry.signal(); sig) {
@@ -348,6 +355,19 @@ public:
   [[nodiscard]] inline std::unique_ptr<Interface> interface() noexcept
   {
     return std::make_unique<Interface>(this);
+  }
+
+  /// Returns the previous blocked state.
+  bool setBlocked(bool blocked)
+  {
+    const auto previous = blocked_.load();
+    blocked_ = blocked;
+    return previous;
+  }
+
+  bool blocked() const
+  {
+    return blocked_;
   }
 
 private:
@@ -396,6 +416,7 @@ private:
 
   Cont entries;
   mutable std::mutex entriesMutex;
+  std::atomic_bool blocked_ = false;
 };
 
 } // namespace sigs

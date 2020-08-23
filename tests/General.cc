@@ -216,6 +216,18 @@ TEST(General, returnValuesWithSignals)
   EXPECT_EQ(sum, 1 + 2 + 3 + 4);
 }
 
+TEST(General, returnValuesBlocked)
+{
+  sigs::Signal<int()> s;
+  s.connect([] { return 1; });
+  s.setBlocked(true);
+
+  int sum = 0;
+  s([&sum](int retVal) { sum += retVal; });
+
+  EXPECT_EQ(sum, 0);
+}
+
 TEST(General, sameSlotManyConnections)
 {
   int calls = 0;
@@ -301,4 +313,78 @@ TEST(General, disconnectWithNoSlotClearsAll)
   s.connect([] {});
   s.disconnect();
   ASSERT_TRUE(s.empty());
+}
+
+TEST(General, blocked)
+{
+  sigs::Signal<void()> s;
+  ASSERT_FALSE(s.blocked());
+  s.setBlocked(true);
+  ASSERT_TRUE(s.blocked());
+}
+
+TEST(General, blockedPreviousValue)
+{
+  sigs::Signal<void()> s;
+  ASSERT_FALSE(s.setBlocked(true));
+  ASSERT_TRUE(s.setBlocked(true));
+}
+
+TEST(General, blockedSlots)
+{
+  int calls = 0;
+  const auto slot = [&calls] { calls++; };
+
+  sigs::Signal<void()> s;
+  s.connect(slot);
+
+  s();
+  ASSERT_EQ(calls, 1);
+
+  s.setBlocked(true);
+  ASSERT_TRUE(s.blocked());
+
+  s();
+  ASSERT_EQ(calls, 1);
+
+  s.setBlocked(false);
+  ASSERT_FALSE(s.blocked());
+
+  s();
+  ASSERT_EQ(calls, 2);
+}
+
+TEST(General, blockedSignals)
+{
+  int calls = 0;
+  const auto slot = [&calls] { calls++; };
+
+  sigs::Signal<void()> s, s2;
+  s2.connect(slot);
+  s.connect(s2);
+
+  s();
+  ASSERT_EQ(calls, 1);
+
+  // Block outer signal.
+  s.setBlocked(true);
+  ASSERT_TRUE(s.blocked());
+  ASSERT_FALSE(s2.blocked());
+
+  s();
+  ASSERT_EQ(calls, 1);
+
+  s.setBlocked(false);
+  ASSERT_FALSE(s.blocked());
+
+  s();
+  ASSERT_EQ(calls, 2);
+
+  // Block inner signal.
+  s2.setBlocked(true);
+  ASSERT_TRUE(s2.blocked());
+  ASSERT_FALSE(s.blocked());
+
+  s();
+  ASSERT_EQ(calls, 2);
 }
