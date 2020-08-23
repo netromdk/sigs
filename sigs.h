@@ -129,12 +129,12 @@ class SignalBlocker final {
   using Sig = Signal<T>;
 
 public:
-  explicit SignalBlocker(Sig &sig) noexcept : sig_(sig)
+  explicit SignalBlocker(Sig *sig) noexcept : sig_(sig)
   {
     reblock();
   }
 
-  explicit SignalBlocker(Sig *sig) noexcept : sig_(*sig)
+  explicit SignalBlocker(Sig &sig) noexcept : sig_(&sig)
   {
     reblock();
   }
@@ -147,21 +147,52 @@ public:
   SignalBlocker(const SignalBlocker &rhs) = delete;
   SignalBlocker &operator=(const SignalBlocker &rhs) = delete;
 
-  SignalBlocker(SignalBlocker &&rhs) = delete;
-  SignalBlocker &operator=(SignalBlocker &&rhs) = delete;
+  SignalBlocker(SignalBlocker &&rhs) noexcept
+  {
+    moveAssign(std::move(rhs));
+  }
+
+  /// Unblocks `this` if signals of `this` and `rhs` aren't the same.
+  SignalBlocker &operator=(SignalBlocker &&rhs) noexcept
+  {
+    if (sig_ != rhs.sig_) {
+      unblock();
+    }
+
+    moveAssign(std::move(rhs));
+    return *this;
+  }
 
   void reblock() noexcept
   {
-    previous = sig_.setBlocked(true);
+    if (sig_) {
+      previous = sig_->setBlocked(true);
+    }
   }
 
   void unblock() noexcept
   {
-    sig_.setBlocked(previous);
+    if (sig_) {
+      sig_->setBlocked(previous);
+    }
+  }
+
+  bool null() const noexcept
+  {
+    return nullptr == sig_;
   }
 
 private:
-  Sig &sig_;
+  void moveAssign(SignalBlocker &&rhs)
+  {
+    sig_ = rhs.sig_;
+    previous = rhs.previous;
+
+    // `rhs` won't do any action on destruction.
+    rhs.sig_ = nullptr;
+  }
+
+  Sig *sig_ = nullptr;
   bool previous = false;
 };
 
