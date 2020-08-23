@@ -124,6 +124,47 @@ public:
 template <typename>
 class Signal;
 
+template <typename T>
+class SignalBlocker final {
+  using Sig = Signal<T>;
+
+public:
+  explicit SignalBlocker(Sig &sig) noexcept : sig_(sig)
+  {
+    reblock();
+  }
+
+  explicit SignalBlocker(Sig *sig) noexcept : sig_(*sig)
+  {
+    reblock();
+  }
+
+  virtual ~SignalBlocker() noexcept
+  {
+    unblock();
+  }
+
+  SignalBlocker(const SignalBlocker &rhs) = delete;
+  SignalBlocker &operator=(const SignalBlocker &rhs) = delete;
+
+  SignalBlocker(SignalBlocker &&rhs) = delete;
+  SignalBlocker &operator=(SignalBlocker &&rhs) = delete;
+
+  void reblock() noexcept
+  {
+    previous = sig_.setBlocked(true);
+  }
+
+  void unblock() noexcept
+  {
+    sig_.setBlocked(previous);
+  }
+
+private:
+  Sig &sig_;
+  bool previous = false;
+};
+
 template <typename Ret, typename... Args>
 class Signal<Ret(Args...)> final {
   using Slot = std::function<Ret(Args...)>;

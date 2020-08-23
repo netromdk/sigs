@@ -21,6 +21,7 @@ add_executable(
 
   General.cc
   Interface.cc
+  SignalBlocker.cc
   )
 
 add_test(
