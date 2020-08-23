@@ -1,11 +1,11 @@
 /***************************************************************************************************
 sigs
 
-Simple thread-safe signal/slot C++17 library.
+Simple thread-safe signal/slot C++17 include-only library.
 
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Morten Kristensen, me AT mortens DOT dev
+Copyright (c) 2015-2020 Morten Kristensen, me AT mortens DOT dev
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
