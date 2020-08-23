@@ -20,6 +20,10 @@ if (NOT WIN32)
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
 endif()
 
+# Show color in diagnostics messages from Clang.
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics")
+endif()
 
 if (NOT WIN32)
   # Clang/GCC
