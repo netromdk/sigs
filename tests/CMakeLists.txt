@@ -1,7 +1,12 @@
 include_directories(
+  ${CMAKE_SOURCE_DIR}
+  )
+
+# Include gtest as system headers so no warnings will be shown.
+include_directories(
+  SYSTEM
   gtest/
   gtest/include
-  ${CMAKE_SOURCE_DIR}
   )
 
 add_library(
