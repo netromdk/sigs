@@ -80,3 +80,13 @@ elseif (MSVC AND (${MSVC_VERSION} GREATER_EQUAL 1910))
 else()
   message(FATAL_ERROR "Your compiler does not support C++17 - aborting!")
 endif()
+
+# Detect if ccache is installed and use if it is the case.
+if (USE_CCACHE)
+  find_program(CCACHE ccache)
+  if (CCACHE)
+    # Specify to launch ccache for compilation and linking globally.
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+  endif()
+endif()

@@ -11,6 +11,7 @@ option(CODE_COVERAGE "Instrument for code coverage (clang only!)" OFF)
 option(ADDRESS_SANITIZER "Use memory error detector  (clang only and implies debug mode!)" OFF)
 option(STATIC_ANALYZER "Do static analysis (clang only and implies debug mode!)" OFF)
 option(EVERY_WARNING "Use -Weverything (clang only)" OFF)
+option(USE_CCACHE "Use ccache (if found) to speed up compile and link" OFF)
 
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -127,6 +128,13 @@ if (APPLE)
 endif()
 
 message(STATUS "Compiler: ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID})")
+
+if (CCACHE)
+  message(STATUS "CCache: ${CCACHE} (using to speed up compile + link)")
+else()
+  message(STATUS "CCache: OFF")
+endif()
+
 message(STATUS "Detected processor count: ${CPU_COUNT}")
 
 if (CODE_COVERAGE)
