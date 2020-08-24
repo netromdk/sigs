@@ -177,11 +177,6 @@ public:
     }
   }
 
-  bool null() const noexcept
-  {
-    return nullptr == sig_;
-  }
-
 private:
   void moveAssign(SignalBlocker &&rhs)
   {

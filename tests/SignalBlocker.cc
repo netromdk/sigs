@@ -138,8 +138,6 @@ TEST(SignalBlocker, moveConstructible)
   ASSERT_TRUE(s.blocked());
 
   sigs::SignalBlocker sb2(std::move(sb));
-  ASSERT_FALSE(sb2.null());
-  ASSERT_TRUE(sb.null());
   ASSERT_TRUE(s.blocked());
 }
 
@@ -154,8 +152,6 @@ TEST(SignalBlocker, moveAssignable)
   ASSERT_TRUE(s2.blocked());
 
   sb2 = std::move(sb);
-  ASSERT_FALSE(sb2.null());
-  ASSERT_TRUE(sb.null());
   ASSERT_TRUE(s.blocked());
 
   // `s2` is unblocked when `sb` was moved to `sb2` since they block different signals.
@@ -173,8 +169,6 @@ TEST(SignalBlocker, moveAssignableSameSignal)
   ASSERT_TRUE(s.blocked());
 
   sb2 = std::move(sb);
-  ASSERT_FALSE(sb2.null());
-  ASSERT_TRUE(sb.null());
 
   // Stays blocked because `sb` and `sb2` were blocking the same signal.
   ASSERT_TRUE(s.blocked());
