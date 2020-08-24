@@ -120,6 +120,29 @@ if (found_cppcheck)
     )
 endif()
 
+find_program(found_clang_tidy clang-tidy)
+if (found_clang_tidy)
+  add_custom_target(
+    clang-tidy
+
+    clang-tidy sigs.h
+
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Checking with clang-tidy"
+    USES_TERMINAL
+    )
+
+  add_custom_target(
+    clang-tidy-fix
+
+    clang-tidy --fix sigs.h
+
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Fixing with clang-tidy"
+    USES_TERMINAL
+    )
+endif()
+
 message(STATUS "--------------------------------------------------")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
@@ -155,6 +178,12 @@ if (found_cppcheck)
   message(STATUS "cppcheck target: enabled")
 else()
   message(STATUS "cppcheck target: disabled (cppcheck not found)")
+endif()
+
+if (found_clang_tidy)
+  message(STATUS "clang-tidy targets: clang-tidy, clang-tidy-fix")
+else()
+  message(STATUS "clang-tidy targets: disabled (clang-tidy not found)")
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
