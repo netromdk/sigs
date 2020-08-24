@@ -198,16 +198,17 @@ class Signal<Ret(Args...)> final {
 
   class Entry final {
   public:
-    Entry(const Slot &slot, Connection conn) noexcept : slot_(slot), conn_(conn), signal_(nullptr)
+    Entry(const Slot &slot, Connection conn) noexcept
+      : slot_(slot), conn_(std::move(conn)), signal_(nullptr)
     {
     }
 
     Entry(Slot &&slot, Connection conn) noexcept
-      : slot_(std::move(slot)), conn_(conn), signal_(nullptr)
+      : slot_(std::move(slot)), conn_(std::move(conn)), signal_(nullptr)
     {
     }
 
-    Entry(Signal *signal, Connection conn) noexcept : conn_(conn), signal_(signal)
+    Entry(Signal *signal, Connection conn) noexcept : conn_(std::move(conn)), signal_(signal)
     {
     }
 
@@ -221,7 +222,7 @@ class Signal<Ret(Args...)> final {
       return signal_;
     }
 
-    Connection conn() const noexcept
+    [[nodiscard]] Connection conn() const noexcept
     {
       return conn_;
     }
@@ -312,8 +313,8 @@ public:
     return *this;
   }
 
-  Signal(Signal &&rhs) = default;
-  Signal &operator=(Signal &&rhs) = default;
+  Signal(Signal &&rhs) noexcept = default;
+  Signal &operator=(Signal &&rhs) noexcept = default;
 
   std::size_t size() const noexcept
   {
@@ -369,7 +370,7 @@ public:
 
   /// Disconnects \p conn from signal.
   /** If no value is given, all slots are disconnected. */
-  void disconnect(std::optional<Connection> conn = std::nullopt) noexcept
+  void disconnect(const std::optional<Connection> &conn = std::nullopt) noexcept
   {
     if (!conn) {
       clear();
@@ -457,7 +458,7 @@ private:
     return entries.erase(it);
   }
 
-  void eraseEntries(std::function<bool(typename Cont::iterator)> pred = [](auto) {
+  void eraseEntries(std::function<bool(typename Cont::iterator)> pred = [](auto /*unused*/) {
     return true;
   }) noexcept
   {
@@ -472,7 +473,8 @@ private:
   }
 
   template <typename Instance, typename MembFunc, std::size_t... Ns>
-  [[nodiscard]] inline Slot bindMf(Instance *instance, MembFunc Instance::*mf, Seq<Ns...>) noexcept
+  [[nodiscard]] inline Slot bindMf(Instance *instance, MembFunc Instance::*mf,
+                                   Seq<Ns...> /*unused*/) noexcept
   {
     return std::bind(mf, instance, Placeholder<Ns>()...);
   }
