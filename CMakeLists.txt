@@ -121,6 +121,11 @@ endif()
 
 message(STATUS "--------------------------------------------------")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+
+if (APPLE)
+  message(STATUS "Mac SDK: ${DEV_SDK}")
+endif()
+
 message(STATUS "Compiler: ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID})")
 message(STATUS "Detected processor count: ${CPU_COUNT}")
 
