@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 
 #include "gtest/gtest.h"
 
@@ -412,4 +413,55 @@ TEST(General, copyAssignable)
   s2 = s;
   ASSERT_EQ(s2.size(), 2);
   ASSERT_TRUE(s2.blocked());
+}
+
+TEST(General, dontMoveRvalues)
+{
+  sigs::Signal<void(std::string)> s;
+
+  std::string res;
+  auto func = [&res](std::string str) { res += str; };
+  s.connect(func);
+  s.connect(func);
+  s.connect(func);
+
+  s("test");
+  ASSERT_EQ("testtesttest", res);
+}
+
+TEST(General, dontMoveRvaluesReturnValue)
+{
+  sigs::Signal<int(std::string)> s;
+
+  std::string res;
+  auto func = [&res](std::string str) -> int {
+    res += str;
+    return 1;
+  };
+  s.connect(func);
+  s.connect(func);
+  s.connect(func);
+
+  int sum = 0;
+  s([&sum](int retVal) { sum += retVal; }, "test");
+
+  ASSERT_EQ("testtesttest", res);
+  ASSERT_EQ(3, sum);
+}
+
+TEST(General, dontMoveRvaluesSubSignal)
+{
+  std::string res;
+  auto func = [&res](std::string str) { res += str; };
+
+  sigs::Signal<void(std::string)> s;
+  s.connect(func);
+
+  decltype(s) s2;
+  s2.connect(func);
+  s2.connect(s);
+  s2.connect(func);
+
+  s2("test");
+  ASSERT_EQ("testtesttest", res);
 }

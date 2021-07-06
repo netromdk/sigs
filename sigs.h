@@ -399,7 +399,7 @@ public:
         (*sig)(std::forward<Args>(args)...);
       }
       else {
-        entry.slot()(std::forward<Args>(args)...);
+        entry.slot()(std::forward<const Args>(args)...);
       }
     }
   }
@@ -417,7 +417,7 @@ public:
         (*sig)(retFunc, std::forward<Args>(args)...);
       }
       else {
-        retFunc(entry.slot()(std::forward<Args>(args)...));
+        retFunc(entry.slot()(std::forward<const Args>(args)...));
       }
     }
   }
