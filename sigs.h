@@ -191,6 +191,10 @@ private:
   bool previous = false;
 };
 
+/// Suppress CTAD warning.
+template <typename T>
+SignalBlocker(T) -> SignalBlocker<T>;
+
 template <typename Ret, typename... Args>
 class Signal<Ret(Args...)> final {
   using Slot = std::function<Ret(Args...)>;
