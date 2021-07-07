@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <thread>
 
 #include "gtest/gtest.h"
 
@@ -464,4 +465,49 @@ TEST(General, dontMoveRvaluesSubSignal)
 
   s2("test");
   ASSERT_EQ("testtesttest", res);
+}
+
+TEST(General, threadedInvocation)
+{
+  int sum = 0;
+  auto func = [&sum] { sum++; };
+
+  sigs::Signal<void()> s;
+  s.connect(func);
+  s.connect(func);
+
+  int n = 3;
+  std::thread t([&s, n] {
+    for (int i = 0; i < n; ++i) {
+      s();
+    }
+  });
+  t.join();
+
+  ASSERT_EQ(n * 2, sum);
+}
+
+TEST(General, threadedDontMoveRvalues)
+{
+  int sum = 0;
+  std::string res;
+  auto func = [&](std::string str) {
+    sum++;
+    res += str;
+  };
+
+  sigs::Signal<void(std::string)> s;
+  s.connect(func);
+  s.connect(func);
+
+  int n = 3;
+  std::thread t([&s, n] {
+    for (int i = 0; i < n; ++i) {
+      s("x");
+    }
+  });
+  t.join();
+
+  ASSERT_EQ(n * 2, sum);
+  ASSERT_EQ(std::string(sum, 'x'), res);
 }
