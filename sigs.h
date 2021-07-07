@@ -91,7 +91,7 @@ class ConnectionBase final {
   friend class Signal;
 
 public:
-  void disconnect() noexcept
+  void disconnect()
   {
     if (deleter) deleter();
   }
