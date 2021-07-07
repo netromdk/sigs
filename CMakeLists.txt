@@ -125,7 +125,7 @@ if (found_clang_tidy)
   add_custom_target(
     clang-tidy
 
-    clang-tidy sigs.h
+    clang-tidy -p ${CMAKE_CURRENT_BINARY_DIR} sigs.h
 
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Checking with clang-tidy"
@@ -135,7 +135,7 @@ if (found_clang_tidy)
   add_custom_target(
     clang-tidy-fix
 
-    clang-tidy --fix sigs.h
+    clang-tidy -p ${CMAKE_CURRENT_BINARY_DIR} --fix sigs.h
 
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Fixing with clang-tidy"
