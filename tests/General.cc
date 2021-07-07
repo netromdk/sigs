@@ -122,6 +122,24 @@ TEST(General, connectionDisconnectOnSignal)
   EXPECT_EQ(i, 1);
 }
 
+TEST(General, specificConnectionDisconnectOnSignal)
+{
+  sigs::Signal<void(int &)> s;
+  s.connect([](int &i) { i += 2; });
+  auto conn = s.connect([](int &i) { i += 4; });
+  s.connect([](int &i) { i += 8; });
+
+  int i = 0;
+  s(i);
+  EXPECT_EQ(i, 2 + 4 + 8);
+
+  // Disconnect middle connection only.
+  s.disconnect(conn);
+
+  s(i);
+  EXPECT_EQ(i, (2 + 4 + 8) + (2 + 8));
+}
+
 TEST(General, connectSignalToSignal)
 {
   sigs::Signal<void(int &)> s1;
