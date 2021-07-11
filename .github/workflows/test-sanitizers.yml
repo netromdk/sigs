@@ -1,0 +1,29 @@
+name: Clang Sanitizers
+
+# On all pushes to branches and pull requests in general.
+on:
+  push:
+  pull_request:
+
+env:
+  BUILD_TYPE: Debug
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sanitizer: [ADDRESS_SANITIZER, THREAD_SANITIZER, UNDEFINED_SANITIZER]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: CC=clang-12 CXX=clang++-12 cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -D${{matrix.sanitizer}}=ON -DEVERY_WARNING=ON
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --verbose
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      run: ctest -C ${{env.BUILD_TYPE}} --output-on-failure
