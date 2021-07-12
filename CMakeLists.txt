@@ -157,7 +157,7 @@ message(STATUS "--------------------------------------------------")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 if (APPLE)
-  message(STATUS "Mac SDK: ${DEV_SDK}")
+  message(STATUS "macOS deployent SDK: ${CMAKE_OSX_DEPLOYMENT_TARGET}")
 endif()
 
 message(STATUS "Compiler: ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID})")
