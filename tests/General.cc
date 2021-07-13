@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iostream>
 #include <string>
 #include <thread>
@@ -5,6 +6,8 @@
 #include "gtest/gtest.h"
 
 #include "sigs.h"
+
+using namespace std::chrono_literals;
 
 TEST(General, instantiate)
 {
@@ -528,4 +531,40 @@ TEST(General, threadedDontMoveRvalues)
 
   ASSERT_EQ(n * 2, sum);
   ASSERT_EQ(std::string(sum, 'x'), res);
+}
+
+TEST(General, valueReferences)
+{
+  sigs::Signal<void(int &)> s;
+
+  int res = 0, iterations = 3;
+  for (int j = 0; j < iterations; ++j) {
+    s.connect([](int &i) { i++; });
+  }
+
+  s(res);
+  ASSERT_EQ(iterations, res);
+}
+
+// If locks aren't used inside the Signal, the synchronicity could be off and the value differs.
+TEST(General, threadedLocking)
+{
+  sigs::Signal<void(int &)> s;
+  s.connect([](int &i) { i++; });
+
+  int n = 0;
+
+  auto func = [&] {
+    std::this_thread::sleep_for(25ms);
+    s(n);
+  };
+
+  std::thread t1(func);
+  std::thread t2(func);
+  std::thread t3(func);
+  t1.join();
+  t2.join();
+  t3.join();
+
+  ASSERT_EQ(3, n);
 }
