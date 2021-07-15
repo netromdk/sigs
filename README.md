@@ -16,6 +16,7 @@ Table of contents
 * [Return values](#return-values)
 * [Signal interface](#signal-interface)
 * [Blocking signals and slots](#blocking-signals-and-slots)
+* [Customizing lock and mutex types](#customizing-lock-and-mutex-types)
 
 Examples
 ========
@@ -238,7 +239,7 @@ s.connect([] { /* .. */ });
 s.connect([] { /* .. */ });
 
 {
-  sigs::SignalBlocker blocker(s);
+  sigs::SignalBlocker<void()> blocker(s);
 
   // No slots will be triggered since the signal is blocked.
   s();
@@ -247,3 +248,33 @@ s.connect([] { /* .. */ });
 // All connected slots are triggered since the signal is no longer blocked.
 s();
 ```
+
+Customizing lock and mutex types
+================================
+
+The default signal type `sigs::Signal<T>` is actually short for `sigs::BasicSignal<T, sigs::BasicLock>` (with `sigs::BasicLock = std::lock_guard<std::mutex>`). Thus the lock type is `std::lock_guard` and the mutex type is `std::mutex`.
+
+Custom lock and mutex types can be supplied by defining a new type, for instance:
+```c++
+template <typename T>
+using MySignal = sigs::BasicSignal<T, MyLock>;
+```
+
+The required lock and mutex interfaces are as follows:
+```c++
+class Mutex {
+public:
+  void lock();
+  void unlock();
+};
+
+template <typename Mutex>
+class Lock {
+public:
+  using mutex_type = Mutex;
+
+  explicit Lock(Mutex &);
+};
+```
+
+The lock type is supposed to lock/unlock following the RAII idiom.
