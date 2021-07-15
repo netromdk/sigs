@@ -87,8 +87,8 @@ struct Use final {
 };
 
 class ConnectionBase final {
-  template <typename>
-  friend class Signal;
+  template <typename, typename>
+  friend class BasicSignal;
 
 public:
   void disconnect()
@@ -121,39 +121,39 @@ public:
 
 } // namespace detail
 
-template <typename>
-class Signal;
+template <typename, typename>
+class BasicSignal;
 
-template <typename T>
-class SignalBlocker final {
-  using Sig = Signal<T>;
+template <typename T, typename Lock>
+class BasicSignalBlocker {
+  using Sig = BasicSignal<T, Lock>;
 
 public:
-  explicit SignalBlocker(Sig *sig) noexcept : sig_(sig)
+  explicit BasicSignalBlocker(Sig *sig) noexcept : sig_(sig)
   {
     reblock();
   }
 
-  explicit SignalBlocker(Sig &sig) noexcept : sig_(&sig)
+  explicit BasicSignalBlocker(Sig &sig) noexcept : sig_(&sig)
   {
     reblock();
   }
 
-  virtual ~SignalBlocker() noexcept
+  virtual ~BasicSignalBlocker() noexcept
   {
     unblock();
   }
 
-  SignalBlocker(const SignalBlocker &rhs) = delete;
-  SignalBlocker &operator=(const SignalBlocker &rhs) = delete;
+  BasicSignalBlocker(const BasicSignalBlocker &rhs) = delete;
+  BasicSignalBlocker &operator=(const BasicSignalBlocker &rhs) = delete;
 
-  SignalBlocker(SignalBlocker &&rhs) noexcept
+  BasicSignalBlocker(BasicSignalBlocker &&rhs) noexcept
   {
     moveAssign(std::move(rhs));
   }
 
   /// Unblocks `this` if signals of `this` and `rhs` aren't the same.
-  SignalBlocker &operator=(SignalBlocker &&rhs) noexcept
+  BasicSignalBlocker &operator=(BasicSignalBlocker &&rhs) noexcept
   {
     if (sig_ != rhs.sig_) {
       unblock();
@@ -178,7 +178,7 @@ public:
   }
 
 private:
-  void moveAssign(SignalBlocker &&rhs)
+  void moveAssign(BasicSignalBlocker &&rhs)
   {
     sig_ = rhs.sig_;
     previous = rhs.previous;
@@ -192,13 +192,14 @@ private:
 };
 
 /// Suppress CTAD warning.
-template <typename T>
-SignalBlocker(T) -> SignalBlocker<T>;
+template <typename T, typename Lock>
+BasicSignalBlocker(T, Lock) -> BasicSignalBlocker<T, Lock>;
 
-template <typename Ret, typename... Args>
-class Signal<Ret(Args...)> final {
+template <typename Ret, typename... Args, typename Lock>
+class BasicSignal<Ret(Args...), Lock> {
   using Slot = std::function<Ret(Args...)>;
-  using SignalType = Signal<Ret(Args...)>;
+  using SignalType = BasicSignal<Ret(Args...), Lock>;
+  using Mutex = typename Lock::mutex_type;
 
   class Entry final {
   public:
@@ -212,7 +213,7 @@ class Signal<Ret(Args...)> final {
     {
     }
 
-    Entry(Signal *signal, Connection conn) noexcept : conn_(std::move(conn)), signal_(signal)
+    Entry(BasicSignal *signal, Connection conn) noexcept : conn_(std::move(conn)), signal_(signal)
     {
     }
 
@@ -221,7 +222,7 @@ class Signal<Ret(Args...)> final {
       return slot_;
     }
 
-    Signal *signal() const noexcept
+    BasicSignal *signal() const noexcept
     {
       return signal_;
     }
@@ -234,11 +235,10 @@ class Signal<Ret(Args...)> final {
   private:
     Slot slot_;
     Connection conn_;
-    Signal *signal_;
+    BasicSignal *signal_;
   };
 
   using Cont = std::vector<Entry>;
-  using Lock = std::lock_guard<std::mutex>;
 
 public:
   using ReturnType = Ret;
@@ -267,7 +267,7 @@ public:
       return sig_->connect(instance, mf);
     }
 
-    inline Connection connect(Signal &signal) noexcept
+    inline Connection connect(BasicSignal &signal) noexcept
     {
       return sig_->connect(signal);
     }
@@ -277,7 +277,7 @@ public:
       sig_->disconnect(conn);
     }
 
-    inline void disconnect(Signal &signal) noexcept
+    inline void disconnect(BasicSignal &signal) noexcept
     {
       sig_->disconnect(signal);
     }
@@ -286,9 +286,9 @@ public:
     SignalType *sig_ = nullptr;
   };
 
-  Signal() noexcept = default;
+  BasicSignal() noexcept = default;
 
-  virtual ~Signal() noexcept
+  virtual ~BasicSignal() noexcept
   {
     Lock lock(entriesMutex);
     for (auto &entry : entries) {
@@ -298,7 +298,7 @@ public:
     }
   }
 
-  Signal(const Signal &rhs) noexcept : Signal()
+  BasicSignal(const BasicSignal &rhs) noexcept : BasicSignal()
   {
     Lock lock1(entriesMutex);
     Lock lock2(rhs.entriesMutex);
@@ -308,7 +308,7 @@ public:
     blocked_ = rhs.blocked_.load();
   }
 
-  Signal &operator=(const Signal &rhs) noexcept
+  BasicSignal &operator=(const BasicSignal &rhs) noexcept
   {
     Lock lock1(entriesMutex);
     Lock lock2(rhs.entriesMutex);
@@ -317,8 +317,8 @@ public:
     return *this;
   }
 
-  Signal(Signal &&rhs) noexcept = default;
-  Signal &operator=(Signal &&rhs) noexcept = default;
+  BasicSignal(BasicSignal &&rhs) noexcept = default;
+  BasicSignal &operator=(BasicSignal &&rhs) noexcept = default;
 
   std::size_t size() const noexcept
   {
@@ -358,7 +358,7 @@ public:
   }
 
   /// Connecting a signal will trigger all of its slots when this signal is triggered.
-  Connection connect(Signal &signal) noexcept
+  Connection connect(BasicSignal &signal) noexcept
   {
     Lock lock(entriesMutex);
     auto conn = makeConnection();
@@ -385,7 +385,7 @@ public:
     eraseEntries([conn](auto it) { return it->conn() == conn; });
   }
 
-  void disconnect(Signal &signal) noexcept
+  void disconnect(BasicSignal &signal) noexcept
   {
     assert(&signal != this && "Disconnecting from self has no effect.");
 
@@ -393,7 +393,7 @@ public:
     eraseEntries([sig = &signal](auto it) { return it->signal() == sig; });
   }
 
-  void operator()(Args &&... args) noexcept
+  void operator()(Args &&...args) noexcept
   {
     if (blocked()) return;
 
@@ -409,7 +409,7 @@ public:
   }
 
   template <typename RetFunc = typename detail::VoidableFunction<ReturnType>::func>
-  void operator()(const RetFunc &retFunc, Args &&... args) noexcept
+  void operator()(const RetFunc &retFunc, Args &&...args) noexcept
   {
     static_assert(!std::is_void_v<ReturnType>, "Must have non-void return type!");
 
@@ -490,9 +490,22 @@ private:
   }
 
   Cont entries;
-  mutable std::mutex entriesMutex;
+  mutable Mutex entriesMutex;
   std::atomic_bool blocked_ = false;
 };
+
+using BasicLock = std::lock_guard<std::mutex>;
+
+/// Default signal types.
+//@{
+
+template <typename T>
+using SignalBlocker = BasicSignalBlocker<T, BasicLock>;
+
+template <typename T>
+using Signal = BasicSignal<T, BasicLock>;
+
+//@}
 
 } // namespace sigs
 
