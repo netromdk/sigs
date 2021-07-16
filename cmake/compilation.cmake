@@ -60,7 +60,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
   endif()
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
   # Xcode 10 was based on Clang 6 which has full C++17 support.
-  if (APPLE AND "${CMAKE_CXX_COMPILER}" MATCHES "Xcode")
+  if (APPLE AND "${CMAKE_CXX_COMPILER_ID}" MATCHES "AppleClang")
     set(target_version "10.0")
   else()
     set(target_version "6")
