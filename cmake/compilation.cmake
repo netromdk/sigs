@@ -4,6 +4,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(COMMON_COMPILER_WARNINGS "-Wno-unused-parameter -Wempty-body -Woverloaded-virtual -Wtautological-compare -Wshadow -Wmissing-noreturn -Wdouble-promotion")
 set(CLANG_WARNINGS "-Wnull-arithmetic -Woverriding-method-mismatch -Wcovered-switch-default -Wzero-as-null-pointer-constant -Wweak-vtables -Wunused-private-field -Wno-covered-switch-default -Wmismatched-tags")
 set(GCC_WARNINGS "-Wuseless-cast")
+set(GCC10_WARNINGS "-Wmismatched-tags -Wredundant-tags")
 
 # Warnings turned into errors.
 set(COMMON_COMPILER_ERRORS "-Werror=return-type -Werror=delete-incomplete -Werror=delete-non-virtual-dtor -Werror=float-equal -Werror=reorder -Werror=uninitialized -Werror=unreachable-code -Werror=switch")
@@ -57,6 +58,10 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
   if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9.0 OR
       CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 9.0)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC9_ERRORS}")
+  endif()
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 10.0 OR
+      CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 10.0)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC10_WARNINGS}")
   endif()
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
   # Xcode 10 was based on Clang 6 which has full C++17 support.
