@@ -12,13 +12,22 @@ set(CLANG_ERRORS "-Werror=inconsistent-missing-override -Werror=inconsistent-mis
 set(GCC_ERRORS "")
 set(GCC9_ERRORS "-Werror=pessimizing-move")
 
-# Some release optimization flags for GCC/Clang.
-if (NOT WIN32)
+# Some release optimization flags for GCC/Clang/MSVC.
+if (NOT MSVC)
   set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -pedantic -pedantic-errors ${COMMON_COMPILER_WARNINGS} ${COMMON_COMPILER_ERRORS}")
   set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
   set(CMAKE_CXX_FLAGS_MINSIZEREL "-O3 -DNDEBUG")
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
+else()
+  # /EHsc = enables unwind semantics when exception handler is used.
+  # Ignore certain warnings:
+  #   C4514: 'function' : unreferenced inline function has been removed
+  #   C4820: bytes' bytes padding added after construct 'member_name'
+  #   C4710: 'function' : function not inlined
+  #   C4711: function 'function' selected for inline expansion
+  #   C4668: 'symbol' is not defined as a preprocessor macro, replacing with '0' for 'directives'
+  set(CMAKE_CXX_FLAGS "/Wall /EHsc /wd4514 /wd4820 /wd4710 /wd4711 /wd4668")
 endif()
 
 # Show color in diagnostics messages from Clang.
@@ -26,7 +35,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics")
 endif()
 
-if (NOT WIN32)
+if (NOT MSVC)
   # Clang/GCC
   set(REL_OPTS "-pipe -fno-exceptions -fvisibility=hidden -fvisibility-inlines-hidden -ffast-math -funroll-loops")
 
