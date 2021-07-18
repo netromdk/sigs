@@ -7,6 +7,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+include(policies NO_POLICY_SCOPE)
+
 option(CODE_COVERAGE "Instrument for code coverage (clang only!)" OFF)
 option(ADDRESS_SANITIZER "Use memory error detector  (clang only and implies debug mode!)" OFF)
 option(THREAD_SANITIZER "Use thread data race detector  (clang only and implies debug mode!)" OFF)
