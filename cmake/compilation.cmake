@@ -40,7 +40,9 @@ if (NOT WIN32)
 
     if (EVERY_WARNING)
       # But ignore some warnings.
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything -Wno-c++98-compat -Wno-padded -Wno-shadow-field-in-constructor -Wno-c++98-compat-pedantic -Wno-sign-conversion -Wno-old-style-cast -Wno-switch-enum -Wno-float-conversion -Wno-documentation-unknown-command -Wno-global-constructors -Wno-exit-time-destructors -Wno-return-std-move-in-c++11 -Wno-missing-prototypes -Wno-date-time")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything -Wno-c++98-compat -Wno-padded -Wno-shadow-field-in-constructor -Wno-c++98-compat-pedantic")
+      # These happen in gtest which we don't care about:
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-global-constructors -Wno-used-but-marked-unused")
     endif()
   endif()
 
