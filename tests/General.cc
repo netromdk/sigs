@@ -510,7 +510,7 @@ TEST(General, threadedInvocation)
 
 TEST(General, threadedDontMoveRvalues)
 {
-  int sum = 0;
+  unsigned int sum = 0;
   std::string res;
   auto func = [&](std::string str) {
     sum++;
