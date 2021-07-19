@@ -6,9 +6,12 @@
 
 TEST(SignalBlocker, instantiate)
 {
-  sigs::Signal<void()> s;
-  sigs::SignalBlocker<void()> sb1(s);
-  sigs::SignalBlocker<void()> sb2(&s);
+  using SignalType = sigs::Signal<void()>;
+  SignalType s;
+  sigs::SignalBlocker sb1(s);
+  sigs::SignalBlocker<SignalType> sb2(s);
+  sigs::SignalBlocker sb3(&s);
+  sigs::SignalBlocker<SignalType> sb4(&s);
 }
 
 TEST(SignalBlocker, block)
@@ -16,7 +19,7 @@ TEST(SignalBlocker, block)
   sigs::Signal<void()> s;
   ASSERT_FALSE(s.blocked());
 
-  sigs::SignalBlocker<void()> sb(s);
+  sigs::SignalBlocker sb(s);
   ASSERT_TRUE(s.blocked());
 }
 
@@ -25,7 +28,7 @@ TEST(SignalBlocker, unblock)
   sigs::Signal<void()> s;
   ASSERT_FALSE(s.blocked());
 
-  sigs::SignalBlocker<void()> sb(s);
+  sigs::SignalBlocker sb(s);
   ASSERT_TRUE(s.blocked());
 
   sb.unblock();
@@ -37,7 +40,7 @@ TEST(SignalBlocker, reblock)
   sigs::Signal<void()> s;
   ASSERT_FALSE(s.blocked());
 
-  sigs::SignalBlocker<void()> sb(s);
+  sigs::SignalBlocker sb(s);
   ASSERT_TRUE(s.blocked());
 
   sb.unblock();
@@ -53,7 +56,7 @@ TEST(SignalBlocker, scopedBlock)
   ASSERT_FALSE(s.blocked());
 
   {
-    sigs::SignalBlocker<void()> sb(s);
+    sigs::SignalBlocker sb(s);
     ASSERT_TRUE(s.blocked());
   }
 
@@ -66,7 +69,7 @@ TEST(SignalBlocker, scopedBlockPointer)
   ASSERT_FALSE(s.blocked());
 
   {
-    sigs::SignalBlocker<void()> sb(&s);
+    sigs::SignalBlocker sb(&s);
     ASSERT_TRUE(s.blocked());
   }
 
@@ -80,7 +83,7 @@ TEST(SignalBlocker, scopedUnblock)
   ASSERT_FALSE(s.blocked());
 
   {
-    sigs::SignalBlocker<void()> sb(s);
+    sigs::SignalBlocker sb(s);
     ASSERT_TRUE(s.blocked());
 
     sb.unblock();
@@ -97,7 +100,7 @@ TEST(SignalBlocker, scopedUnblockReblock)
   ASSERT_FALSE(s.blocked());
 
   {
-    sigs::SignalBlocker<void()> sb(s);
+    sigs::SignalBlocker sb(s);
     ASSERT_TRUE(s.blocked());
 
     sb.unblock();
@@ -113,12 +116,12 @@ TEST(SignalBlocker, scopedBlockPrevious)
   ASSERT_FALSE(s.blocked());
 
   {
-    sigs::SignalBlocker<void()> sb(s);
+    sigs::SignalBlocker sb(s);
     ASSERT_TRUE(s.blocked());
 
     {
       // Already blocked.
-      sigs::SignalBlocker<void()> sb2(s);
+      sigs::SignalBlocker sb2(s);
       ASSERT_TRUE(s.blocked());
     }
 
@@ -133,10 +136,10 @@ TEST(SignalBlocker, moveConstructible)
 {
   sigs::Signal<void()> s;
 
-  sigs::SignalBlocker<void()> sb(s);
+  sigs::SignalBlocker sb(s);
   ASSERT_TRUE(s.blocked());
 
-  sigs::SignalBlocker<void()> sb2(std::move(sb));
+  sigs::SignalBlocker sb2(std::move(sb));
   ASSERT_TRUE(s.blocked());
 }
 
@@ -144,10 +147,10 @@ TEST(SignalBlocker, moveAssignable)
 {
   sigs::Signal<void()> s, s2;
 
-  sigs::SignalBlocker<void()> sb(s);
+  sigs::SignalBlocker sb(s);
   ASSERT_TRUE(s.blocked());
 
-  sigs::SignalBlocker<void()> sb2(s2);
+  sigs::SignalBlocker sb2(s2);
   ASSERT_TRUE(s2.blocked());
 
   sb2 = std::move(sb);
@@ -161,10 +164,10 @@ TEST(SignalBlocker, moveAssignableSameSignal)
 {
   sigs::Signal<void()> s;
 
-  sigs::SignalBlocker<void()> sb(s);
+  sigs::SignalBlocker sb(s);
   ASSERT_TRUE(s.blocked());
 
-  sigs::SignalBlocker<void()> sb2(s);
+  sigs::SignalBlocker sb2(s);
   ASSERT_TRUE(s.blocked());
 
   sb2 = std::move(sb);

@@ -44,9 +44,6 @@ using LockMutex = Lock<Mutex>;
 template <typename T>
 using CustomSignal = sigs::BasicSignal<T, LockMutex>;
 
-template <typename T>
-using CustomSignalBlocker = sigs::BasicSignalBlocker<T, LockMutex>;
-
 TEST(CustomTypes, signal)
 {
   CustomSignal<void()> s;
@@ -59,6 +56,6 @@ TEST(CustomTypes, blocker)
   CustomSignal<void()> s;
   s.connect([] {});
 
-  CustomSignalBlocker<void()> sb(s);
+  sigs::SignalBlocker sb(s);
   s();
 }

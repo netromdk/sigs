@@ -75,7 +75,7 @@ namespace sigs {
 
 /// When a member function has muliple overloads and you need to use just one of them.
 /** Example:
-    signal.connect(&instance, sigs::Use<int, float>::overloadOf(&ThClass::func));
+    signal.connect(&instance, sigs::Use<int, float>::overloadOf(&TheClass::func));
     */
 template <typename... Args>
 struct Use final {
@@ -124,36 +124,37 @@ public:
 template <typename, typename>
 class BasicSignal;
 
-template <typename T, typename Lock>
-class BasicSignalBlocker {
-  using Sig = BasicSignal<T, Lock>;
+template <typename Sig>
+class SignalBlocker {
+  static_assert(std::is_base_of_v<BasicSignal<typename Sig::RetArgs, typename Sig::LockType>, Sig>,
+                "Sig must extend sigs::BasicSignal");
 
 public:
-  explicit BasicSignalBlocker(Sig *sig) noexcept : sig_(sig)
+  explicit SignalBlocker(Sig *sig) noexcept : sig_(sig)
   {
     reblock();
   }
 
-  explicit BasicSignalBlocker(Sig &sig) noexcept : sig_(&sig)
+  explicit SignalBlocker(Sig &sig) noexcept : sig_(&sig)
   {
     reblock();
   }
 
-  virtual ~BasicSignalBlocker() noexcept
+  virtual ~SignalBlocker() noexcept
   {
     unblock();
   }
 
-  BasicSignalBlocker(const BasicSignalBlocker &rhs) = delete;
-  BasicSignalBlocker &operator=(const BasicSignalBlocker &rhs) = delete;
+  SignalBlocker(const SignalBlocker &rhs) = delete;
+  SignalBlocker &operator=(const SignalBlocker &rhs) = delete;
 
-  BasicSignalBlocker(BasicSignalBlocker &&rhs) noexcept
+  SignalBlocker(SignalBlocker &&rhs) noexcept
   {
     moveAssign(std::move(rhs));
   }
 
   /// Unblocks `this` if signals of `this` and `rhs` aren't the same.
-  BasicSignalBlocker &operator=(BasicSignalBlocker &&rhs) noexcept
+  SignalBlocker &operator=(SignalBlocker &&rhs) noexcept
   {
     if (sig_ != rhs.sig_) {
       unblock();
@@ -178,7 +179,7 @@ public:
   }
 
 private:
-  void moveAssign(BasicSignalBlocker &&rhs)
+  void moveAssign(SignalBlocker &&rhs)
   {
     sig_ = rhs.sig_;
     previous = rhs.previous;
@@ -192,13 +193,19 @@ private:
 };
 
 /// Suppress CTAD warning.
-template <typename T, typename Lock>
-BasicSignalBlocker(T, Lock) -> BasicSignalBlocker<T, Lock>;
+template <typename Sig>
+SignalBlocker(Sig) -> SignalBlocker<Sig>;
 
 template <typename Ret, typename... Args, typename Lock>
 class BasicSignal<Ret(Args...), Lock> {
-  using Slot = std::function<Ret(Args...)>;
-  using SignalType = BasicSignal<Ret(Args...), Lock>;
+public:
+  using RetArgs = Ret(Args...);
+  using SignalType = BasicSignal<RetArgs, Lock>;
+  using LockType = Lock;
+  using ReturnType = Ret;
+
+private:
+  using Slot = std::function<RetArgs>;
   using Mutex = typename Lock::mutex_type;
 
   class Entry final {
@@ -241,7 +248,6 @@ class BasicSignal<Ret(Args...), Lock> {
   using Cont = std::vector<Entry>;
 
 public:
-  using ReturnType = Ret;
   using SlotType = Slot;
 
   /// Interface that only exposes connect and disconnect methods.
@@ -498,9 +504,6 @@ using BasicLock = std::lock_guard<std::mutex>;
 
 /// Default signal types.
 //@{
-
-template <typename T>
-using SignalBlocker = BasicSignalBlocker<T, BasicLock>;
 
 template <typename T>
 using Signal = BasicSignal<T, BasicLock>;
