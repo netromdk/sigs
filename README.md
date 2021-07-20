@@ -1,5 +1,6 @@
 [![Test](https://github.com/netromdk/sigs/workflows/Test/badge.svg?branch=master)](https://github.com/netromdk/sigs/actions)
 [![Clang Sanitizers](https://github.com/netromdk/sigs/workflows/Clang%20Sanitizers/badge.svg?branch=master)](https://github.com/netromdk/sigs/actions)
+[![CodeQL](https://github.com/netromdk/sigs/workflows/CodeQL/badge.svg?branch=master)](https://github.com/netromdk/sigs/security/code-scanning)
 
 # sigs
 Simple thread-safe signal/slot C++17 library, which is templated and include-only. No linking required. Just include the header file "*sigs.h*".
