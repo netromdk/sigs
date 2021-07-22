@@ -23,6 +23,7 @@ add_executable(
   Interface.cc
   SignalBlocker.cc
   CustomTypes.cc
+  SignalMapper.cc
   )
 
 add_test(

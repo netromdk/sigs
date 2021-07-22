@@ -31,12 +31,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
 // The following is used for making variadic type lists for binding member functions and their
@@ -501,6 +503,82 @@ private:
 };
 
 using BasicLock = std::lock_guard<std::mutex>;
+
+template <typename... SignalRetArgs>
+class SignalMapper final {
+  template <typename T>
+  using SignalType = BasicSignal<T, BasicLock>;
+
+public:
+  template <typename RetArgs>
+  bool add(const std::string &name)
+  {
+    if (signals.find(name) != signals.end()) {
+      return false;
+    }
+    signals.emplace(name, SignalType<RetArgs>());
+    return true;
+  }
+
+  template <typename Sig>
+  bool add(const std::string &name, Sig &&sig)
+  {
+    if (signals.find(name) != signals.end()) {
+      return false;
+    }
+    signals.emplace(name, sig);
+    return true;
+  }
+
+  bool remove(const std::string &name)
+  {
+    return 1 == signals.erase(name);
+  }
+
+  [[nodiscard]] std::size_t size() const
+  {
+    return signals.size();
+  }
+
+  [[nodiscard]] bool empty() const
+  {
+    return 0 == size();
+  }
+
+  void clear()
+  {
+    signals.clear();
+  }
+
+  template <typename RetArgs>
+  SignalType<RetArgs> *signal(const std::string &name)
+  {
+    if (auto it = signals.find(name); it != signals.end()) {
+      return &std::get<SignalType<RetArgs>>(it->second);
+    }
+    return nullptr;
+  }
+
+  template <typename RetArgs>
+  std::unique_ptr<typename SignalType<RetArgs>::Interface> interface(const std::string &name)
+  {
+    if (auto *sig = signal<RetArgs>(name); sig != nullptr) {
+      return sig->interface();
+    }
+    return nullptr;
+  }
+
+  template <typename RetArgs, typename... Args>
+  void invoke(const std::string &name, Args &&...args) noexcept
+  {
+    if (auto *sig = signal<RetArgs>(name); sig != nullptr) {
+      (*sig)(std::forward<Args>(args)...);
+    }
+  }
+
+private:
+  std::map<std::string, std::variant<SignalType<SignalRetArgs>...>> signals;
+};
 
 /// Default signal types.
 //@{

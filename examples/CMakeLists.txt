@@ -17,11 +17,17 @@ add_executable(
   ReturnValues.cc
   )
 
+add_executable(
+  signal_mapper
+  SignalMapper.cc
+  )
+
 add_custom_target(
   run_examples
   COMMAND $<TARGET_FILE:button>
   COMMAND $<TARGET_FILE:interface>
   COMMAND $<TARGET_FILE:return_values>
+  COMMAND $<TARGET_FILE:signal_mapper>
   USES_TERMINAL
   )
 
@@ -30,4 +36,5 @@ add_dependencies(
   button
   interface
   return_values
+  signal_mapper
   )

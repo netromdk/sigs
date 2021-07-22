@@ -14,3 +14,8 @@ add_failtest(
   SignalBlockerFakeSignal
   SignalBlockerFakeSignal.cc
   )
+
+add_failtest(
+  SignalMapperAddUnknownSignalType
+  SignalMapperAddUnknownSignalType.cc
+  )
