@@ -125,7 +125,7 @@ template <typename, typename>
 class BasicSignal;
 
 template <typename Sig>
-class SignalBlocker {
+class SignalBlocker final {
   static_assert(std::is_base_of_v<BasicSignal<typename Sig::RetArgs, typename Sig::LockType>, Sig>,
                 "Sig must extend sigs::BasicSignal");
 
