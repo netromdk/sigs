@@ -171,7 +171,7 @@ endif()
 
 message(STATUS "Compiler: ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID})")
 
-if (CCACHE)
+if (USE_CCACHE)
   message(STATUS "CCache: ${CCACHE} (using to speed up compile + link)")
 else()
   message(STATUS "CCache: OFF")
