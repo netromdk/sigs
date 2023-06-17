@@ -216,6 +216,10 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
   message(STATUS "  Address: ${ADDRESS_SANITIZER}")
   message(STATUS "  Thread: ${THREAD_SANITIZER}")
   message(STATUS "  Undefined: ${UNDEFINED_SANITIZER}")
+  if ((ADDRESS_SANITIZER AND THREAD_SANITIZER) OR (ADDRESS_SANITIZER AND UNDEFINED_SANITIZER) OR
+      (THREAD_SANITIZER AND UNDEFINED_SANITIZER))
+    message(FATAL_ERROR "Sanitizers cannot be mixed! Only use one at a time.")
+  endif()
 
   if (EVERY_WARNING)
     message(STATUS "-Weverything: ON")
