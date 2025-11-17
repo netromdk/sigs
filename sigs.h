@@ -75,7 +75,7 @@ namespace sigs {
 template <typename... Args>
 struct Use final {
   template <typename Cls, typename Ret>
-  [[nodiscard]] static inline auto overloadOf(Ret (Cls::*MembFunc)(Args...)) noexcept
+  [[nodiscard]] static auto overloadOf(Ret (Cls::*MembFunc)(Args...)) noexcept
   {
     return MembFunc;
   }
@@ -252,33 +252,33 @@ public:
     {
     }
 
-    inline Connection connect(const Slot &slot) noexcept
+    Connection connect(const Slot &slot) noexcept
     {
       return sig_->connect(slot);
     }
 
-    inline Connection connect(Slot &&slot) noexcept
+    Connection connect(Slot &&slot) noexcept
     {
       return sig_->connect(slot);
     }
 
     template <typename Instance, typename MembFunc>
-    inline Connection connect(Instance *instance, MembFunc Instance::*mf) noexcept
+    Connection connect(Instance *instance, MembFunc Instance::*mf) noexcept
     {
       return sig_->connect(instance, mf);
     }
 
-    inline Connection connect(BasicSignal &signal) noexcept
+    Connection connect(BasicSignal &signal) noexcept
     {
       return sig_->connect(signal);
     }
 
-    inline void disconnect(std::optional<Connection> conn) noexcept
+    void disconnect(std::optional<Connection> conn) noexcept
     {
       sig_->disconnect(conn);
     }
 
-    inline void disconnect(BasicSignal &signal) noexcept
+    void disconnect(BasicSignal &signal) noexcept
     {
       sig_->disconnect(signal);
     }
@@ -427,7 +427,7 @@ public:
     }
   }
 
-  [[nodiscard]] inline std::unique_ptr<Interface> interface() noexcept
+  [[nodiscard]] std::unique_ptr<Interface> interface() noexcept
   {
     return std::make_unique<Interface>(this);
   }
@@ -446,7 +446,7 @@ public:
   }
 
 private:
-  [[nodiscard]] inline Connection makeConnection() noexcept
+  [[nodiscard]] Connection makeConnection() noexcept
   {
     auto conn = std::make_shared<ConnectionBase>();
     conn->deleter = [this, conn] { this->disconnect(conn); };
@@ -478,14 +478,14 @@ private:
   }
 
   template <typename Instance, typename MembFunc, std::size_t... Ns>
-  [[nodiscard]] inline Slot bindMf(Instance *instance, MembFunc Instance::*mf,
+  [[nodiscard]] Slot bindMf(Instance *instance, MembFunc Instance::*mf,
                                    Seq<Ns...> /*unused*/) noexcept
   {
     return std::bind(mf, instance, Placeholder<Ns>()...);
   }
 
   template <typename Instance, typename MembFunc>
-  [[nodiscard]] inline Slot bindMf(Instance *instance, MembFunc Instance::*mf) noexcept
+  [[nodiscard]] Slot bindMf(Instance *instance, MembFunc Instance::*mf) noexcept
   {
     return bindMf(instance, mf, MakeSeq<sizeof...(Args)>());
   }
