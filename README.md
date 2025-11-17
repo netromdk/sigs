@@ -3,7 +3,7 @@
 [![CodeQL](https://github.com/netromdk/sigs/workflows/CodeQL/badge.svg?branch=master)](https://github.com/netromdk/sigs/security/code-scanning)
 
 # sigs
-Simple thread-safe signal/slot C++17 library, which is templated and include-only. No linking required. Just include the header file "*sigs.h*".
+Simple thread-safe signal/slot C++20 library, which is templated and include-only. No linking required. Just include the header file "*sigs.h*" (C++17 version in "*sigs17.h*").
 
 In all its simplicity, the class `sigs::Signal` implements a signal that can be triggered when some event occurs. To receive the signal slots can be connected to it. A slot can be any callable type: lambda, functor, function, or member function. Slots can be disconnected when not needed anymore.
 
