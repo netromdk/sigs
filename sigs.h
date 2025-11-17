@@ -44,20 +44,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace sigs {
 
 template <std::size_t... Ns>
-class Seq {
-};
+class Seq {};
 
 template <std::size_t N, std::size_t... Ns>
-class MakeSeq : public MakeSeq<N - 1, N - 1, Ns...> {
-};
+class MakeSeq : public MakeSeq<N - 1, N - 1, Ns...> {};
 
 template <std::size_t... Ns>
-class MakeSeq<0, Ns...> : public Seq<Ns...> {
-};
+class MakeSeq<0, Ns...> : public Seq<Ns...> {};
 
 template <std::size_t>
-class Placeholder {
-};
+class Placeholder {};
 
 } // namespace sigs
 
@@ -66,8 +62,7 @@ class Placeholder {
 namespace std {
 
 template <size_t N>
-class is_placeholder<sigs::Placeholder<N>> : public integral_constant<std::size_t, N + 1> {
-};
+class is_placeholder<sigs::Placeholder<N>> : public integral_constant<std::size_t, N + 1> {};
 
 } // namespace std
 
