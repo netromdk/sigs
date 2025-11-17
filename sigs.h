@@ -501,7 +501,7 @@ private:
   std::atomic_bool blocked_ = false;
 };
 
-using BasicLock = std::lock_guard<std::mutex>;
+using BasicLock = std::scoped_lock<std::mutex>;
 
 /// Default signal types.
 //@{
