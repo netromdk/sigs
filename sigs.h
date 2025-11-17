@@ -259,7 +259,7 @@ public:
 
     Connection connect(Slot &&slot) noexcept
     {
-      return sig_->connect(slot);
+      return sig_->connect(std::move(slot));
     }
 
     template <typename Instance, typename MembFunc>
