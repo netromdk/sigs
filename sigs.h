@@ -30,11 +30,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <cassert>
 #include <cstddef>
 #include <functional>
-#include <initializer_list>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
