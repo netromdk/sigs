@@ -252,6 +252,8 @@ public:
     {
     }
 
+    ~Interface() noexcept = default;
+
     Interface(const Interface &) = delete;
     Interface(Interface &&) = delete;
 
