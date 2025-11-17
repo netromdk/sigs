@@ -37,7 +37,7 @@ endif()
 
 if (NOT MSVC)
   # Clang/GCC
-  set(REL_OPTS "-pipe -fno-exceptions -fvisibility=hidden -fvisibility-inlines-hidden -ffast-math -funroll-loops")
+  set(REL_OPTS "-O3 -pipe -fno-exceptions -fvisibility=hidden -fvisibility-inlines-hidden -ffast-math -funroll-loops")
 
   # GCC only
   if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
@@ -45,7 +45,7 @@ if (NOT MSVC)
 
   # Clang only
   elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    set(REL_OPTS "${REL_OPTS} -Ofast")
+    set(REL_OPTS "${REL_OPTS}")
 
     if (EVERY_WARNING)
       # But ignore some warnings.
