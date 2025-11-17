@@ -252,6 +252,12 @@ public:
     {
     }
 
+    Interface(const Interface &) = delete;
+    Interface(Interface &&) = delete;
+
+    Interface &operator=(const Interface &) = delete;
+    Interface &operator=(Interface &&) = delete;
+
     Connection connect(const Slot &slot) noexcept
     {
       return sig_->connect(slot);
