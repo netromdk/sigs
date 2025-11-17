@@ -14,12 +14,38 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
+        compiler: [default, gcc, clang]
+
+        # Only run "default" on Windows and macOS, but both Clang and GCC on Linux.
+        exclude:
+          - os: windows-latest
+            compiler: gcc
+          - os: windows-latest
+            compiler: clang
+          - os: macos-latest
+            compiler: gcc
+          - os: macos-latest
+            compiler: clang
+          - os: ubuntu-latest
+            compiler: default
 
     steps:
     - uses: actions/checkout@v2
 
-    - name: Configure cmake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+    - name: Configure CMake (Linux – GCC)
+      if: matrix.os == 'ubuntu-latest' && matrix.compiler == 'gcc'
+      run: |
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+
+    - name: Configure CMake (Linux – Clang)
+      if: matrix.os == 'ubuntu-latest' && matrix.compiler == 'clang'
+      run: |
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+
+    - name: Configure CMake (Windows / macOS – default)
+      if: matrix.compiler == 'default'
+      run: |
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --verbose

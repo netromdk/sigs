@@ -1,6 +1,8 @@
 ---
-Language:        Cpp
-# BasedOnStyle:  LLVM
+Language: Cpp
+Standard: c++20
+TabWidth: 2
+UseTab: Never
 AccessModifierOffset: -2
 AlignAfterOpenBracket: true
 AlignConsecutiveAssignments: false
@@ -61,8 +63,5 @@ SpacesInContainerLiterals: true
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
-Standard:        Cpp11
-TabWidth:        2
-UseTab:          Never
 ...
 

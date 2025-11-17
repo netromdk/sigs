@@ -30,9 +30,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <cassert>
 #include <cstddef>
 #include <functional>
+#include <initializer_list>
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -42,16 +44,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace sigs {
 
 template <std::size_t... Ns>
-class Seq {};
+class Seq {
+};
 
 template <std::size_t N, std::size_t... Ns>
-class MakeSeq : public MakeSeq<N - 1, N - 1, Ns...> {};
+class MakeSeq : public MakeSeq<N - 1, N - 1, Ns...> {
+};
 
 template <std::size_t... Ns>
-class MakeSeq<0, Ns...> : public Seq<Ns...> {};
+class MakeSeq<0, Ns...> : public Seq<Ns...> {
+};
 
 template <std::size_t>
-class Placeholder {};
+class Placeholder {
+};
 
 } // namespace sigs
 
@@ -60,7 +66,8 @@ class Placeholder {};
 namespace std {
 
 template <size_t N>
-class is_placeholder<sigs::Placeholder<N>> : public integral_constant<std::size_t, N + 1> {};
+class is_placeholder<sigs::Placeholder<N>> : public integral_constant<std::size_t, N + 1> {
+};
 
 } // namespace std
 
@@ -72,14 +79,8 @@ namespace sigs {
     */
 template <typename... Args>
 struct Use final {
-  Use(const Use &) = delete;
-  Use(Use &&) = delete;
-
-  Use &operator=(const Use &) = delete;
-  Use &operator=(Use &&) = delete;
-
   template <typename Cls, typename Ret>
-  [[nodiscard]] static auto overloadOf(Ret (Cls::*MembFunc)(Args...)) noexcept
+  [[nodiscard]] static inline auto overloadOf(Ret (Cls::*MembFunc)(Args...)) noexcept
   {
     return MembFunc;
   }
@@ -90,15 +91,6 @@ class ConnectionBase final {
   friend class BasicSignal;
 
 public:
-  ConnectionBase() noexcept = default;
-  ~ConnectionBase() noexcept = default;
-
-  ConnectionBase(const ConnectionBase &) noexcept = default;
-  ConnectionBase(ConnectionBase &&) noexcept = default;
-
-  ConnectionBase &operator=(const ConnectionBase &) noexcept = default;
-  ConnectionBase &operator=(ConnectionBase &&) noexcept = default;
-
   void disconnect()
   {
     if (deleter) deleter();
@@ -265,41 +257,33 @@ public:
     {
     }
 
-    ~Interface() noexcept = default;
-
-    Interface(const Interface &) = delete;
-    Interface(Interface &&) = delete;
-
-    Interface &operator=(const Interface &) = delete;
-    Interface &operator=(Interface &&) = delete;
-
-    Connection connect(const Slot &slot) noexcept
+    inline Connection connect(const Slot &slot) noexcept
     {
       return sig_->connect(slot);
     }
 
-    Connection connect(Slot &&slot) noexcept
+    inline Connection connect(Slot &&slot) noexcept
     {
-      return sig_->connect(std::move(slot));
+      return sig_->connect(slot);
     }
 
     template <typename Instance, typename MembFunc>
-    Connection connect(Instance *instance, MembFunc Instance::*mf) noexcept
+    inline Connection connect(Instance *instance, MembFunc Instance::*mf) noexcept
     {
       return sig_->connect(instance, mf);
     }
 
-    Connection connect(BasicSignal &signal) noexcept
+    inline Connection connect(BasicSignal &signal) noexcept
     {
       return sig_->connect(signal);
     }
 
-    void disconnect(std::optional<Connection> conn) noexcept
+    inline void disconnect(std::optional<Connection> conn) noexcept
     {
       sig_->disconnect(conn);
     }
 
-    void disconnect(BasicSignal &signal) noexcept
+    inline void disconnect(BasicSignal &signal) noexcept
     {
       sig_->disconnect(signal);
     }
@@ -448,7 +432,7 @@ public:
     }
   }
 
-  [[nodiscard]] std::unique_ptr<Interface> interface() noexcept
+  [[nodiscard]] inline std::unique_ptr<Interface> interface() noexcept
   {
     return std::make_unique<Interface>(this);
   }
@@ -467,7 +451,7 @@ public:
   }
 
 private:
-  [[nodiscard]] Connection makeConnection() noexcept
+  [[nodiscard]] inline Connection makeConnection() noexcept
   {
     auto conn = std::make_shared<ConnectionBase>();
     conn->deleter = [this, conn] { this->disconnect(conn); };
@@ -499,14 +483,14 @@ private:
   }
 
   template <typename Instance, typename MembFunc, std::size_t... Ns>
-  [[nodiscard]] Slot bindMf(Instance *instance, MembFunc Instance::*mf,
+  [[nodiscard]] inline Slot bindMf(Instance *instance, MembFunc Instance::*mf,
                                    Seq<Ns...> /*unused*/) noexcept
   {
     return std::bind(mf, instance, Placeholder<Ns>()...);
   }
 
   template <typename Instance, typename MembFunc>
-  [[nodiscard]] Slot bindMf(Instance *instance, MembFunc Instance::*mf) noexcept
+  [[nodiscard]] inline Slot bindMf(Instance *instance, MembFunc Instance::*mf) noexcept
   {
     return bindMf(instance, mf, MakeSeq<sizeof...(Args)>());
   }
@@ -516,7 +500,7 @@ private:
   std::atomic_bool blocked_ = false;
 };
 
-using BasicLock = std::scoped_lock<std::mutex>;
+using BasicLock = std::lock_guard<std::mutex>;
 
 /// Default signal types.
 //@{

@@ -1,5 +1,5 @@
 ---
-Checks: '-*,clang-analyzer-*,cppcoreguidelines-*,performance-*,portability-*,readability-*,bugprone-*,modernize-*,-modernize-use-trailing-return-type,-modernize-pass-by-value'
+Checks: '-*,clang-analyzer-*,cppcoreguidelines-*,performance-*,portability-*,readability-*,-readability-identifier-length,bugprone-*,modernize-*,-modernize-use-trailing-return-type,misc-*'
 FormatStyle: file
 CheckOptions:
   - key:             readability-braces-around-statements.ShortStatementLines

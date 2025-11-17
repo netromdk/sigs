@@ -14,6 +14,15 @@ add_library(
   gtest/src/gtest-all.cc
   )
 
+# Ignore all warnings from gtest code.
+target_compile_options(
+  gtest
+  PRIVATE
+  $<$<CXX_COMPILER_ID:Clang>:-w>
+  $<$<CXX_COMPILER_ID:GNU>:-w>
+  $<$<CXX_COMPILER_ID:MSVC>:/W0>
+  )
+
 add_executable(
   ${testName}
 
