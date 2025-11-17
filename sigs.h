@@ -1,7 +1,7 @@
 /***************************************************************************************************
 sigs
 
-Simple thread-safe signal/slot C++17 include-only library.
+Simple thread-safe signal/slot C++20 include-only library.
 
 The MIT License (MIT)
 
