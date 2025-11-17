@@ -90,6 +90,15 @@ class ConnectionBase final {
   friend class BasicSignal;
 
 public:
+  ConnectionBase() noexcept = default;
+  ~ConnectionBase() noexcept = default;
+
+  ConnectionBase(const ConnectionBase &) noexcept = default;
+  ConnectionBase(ConnectionBase &&) noexcept = default;
+
+  ConnectionBase &operator=(const ConnectionBase &) noexcept = default;
+  ConnectionBase &operator=(ConnectionBase &&) noexcept = default;
+
   void disconnect()
   {
     if (deleter) deleter();
