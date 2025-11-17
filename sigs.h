@@ -72,6 +72,12 @@ namespace sigs {
     */
 template <typename... Args>
 struct Use final {
+  Use(const Use &) = delete;
+  Use(Use &&) = delete;
+
+  Use &operator=(const Use &) = delete;
+  Use &operator=(Use &&) = delete;
+
   template <typename Cls, typename Ret>
   [[nodiscard]] static auto overloadOf(Ret (Cls::*MembFunc)(Args...)) noexcept
   {
