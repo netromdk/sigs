@@ -1,4 +1,4 @@
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(COMMON_COMPILER_WARNINGS "-Wno-unused-parameter -Wempty-body -Woverloaded-virtual -Wtautological-compare -Wshadow -Wmissing-noreturn -Wdouble-promotion")
@@ -61,7 +61,7 @@ if (NOT MSVC)
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-  set(target_version "7.1")
+  set(target_version "12.0")
   if (NOT (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER ${target_version} OR
            CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL ${target_version}))
     message(FATAL_ERROR "Requires GCC >= ${target_version}.")
@@ -75,11 +75,12 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC10_WARNINGS}")
   endif()
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-  # Xcode 10 was based on Clang 6 which has full C++17 support.
+  # Xcode 15 was based on Clang 15 which has full C++20 support (previously the Xcode version was
+  # ahead of the Clang version).
   if (APPLE AND "${CMAKE_CXX_COMPILER_ID}" MATCHES "AppleClang")
-    set(target_version "10.0")
+    set(target_version "15.0")
   else()
-    set(target_version "6")
+    set(target_version "15")
   endif()
 
   if (NOT (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL ${target_version} OR
@@ -90,11 +91,11 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
   endif()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CLANG_WARNINGS} ${CLANG_ERRORS}")
-elseif (MSVC AND (${MSVC_VERSION} GREATER_EQUAL 1910))
-  # Requires at least VS2017 (v1910).
-  # C++17 support is implicitly enabled.
+elseif (MSVC AND (${MSVC_VERSION} GREATER_EQUAL 1929))
+  # Requires at least VS2019 (v1929).
+  # C++20 support is implicitly enabled.
 else()
-  message(FATAL_ERROR "Your compiler does not support C++17 - aborting!")
+  message(FATAL_ERROR "Your compiler does not support C++20 - aborting!")
 endif()
 
 # Detect if ccache is installed and use if it is the case.
