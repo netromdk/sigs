@@ -72,14 +72,14 @@ namespace sigs {
     */
 template <typename... Args>
 struct Use final {
-  Use(const Use &) = delete;
-  Use(Use &&) = delete;
+  constexpr Use(const Use &) = delete;
+  constexpr Use(Use &&) = delete;
 
-  Use &operator=(const Use &) = delete;
-  Use &operator=(Use &&) = delete;
+  constexpr Use &operator=(const Use &) = delete;
+  constexpr Use &operator=(Use &&) = delete;
 
   template <typename Cls, typename Ret>
-  [[nodiscard]] static auto overloadOf(Ret (Cls::*MembFunc)(Args...)) noexcept
+  [[nodiscard]] static constexpr auto overloadOf(Ret (Cls::*MembFunc)(Args...)) noexcept
   {
     return MembFunc;
   }
@@ -138,31 +138,31 @@ class SignalBlocker {
                 "Sig must extend sigs::BasicSignal");
 
 public:
-  explicit SignalBlocker(Sig *sig) noexcept : sig_(sig)
+  explicit constexpr SignalBlocker(Sig *sig) noexcept : sig_(sig)
   {
     reblock();
   }
 
-  explicit SignalBlocker(Sig &sig) noexcept : sig_(&sig)
+  explicit constexpr SignalBlocker(Sig &sig) noexcept : sig_(&sig)
   {
     reblock();
   }
 
-  virtual ~SignalBlocker() noexcept
+  virtual constexpr ~SignalBlocker() noexcept
   {
     unblock();
   }
 
-  SignalBlocker(const SignalBlocker &rhs) = delete;
-  SignalBlocker &operator=(const SignalBlocker &rhs) = delete;
+  constexpr SignalBlocker(const SignalBlocker &rhs) = delete;
+  constexpr SignalBlocker &operator=(const SignalBlocker &rhs) = delete;
 
-  SignalBlocker(SignalBlocker &&rhs) noexcept
+  constexpr SignalBlocker(SignalBlocker &&rhs) noexcept
   {
     moveAssign(std::move(rhs));
   }
 
   /// Unblocks `this` if signals of `this` and `rhs` aren't the same.
-  SignalBlocker &operator=(SignalBlocker &&rhs) noexcept
+  constexpr SignalBlocker &operator=(SignalBlocker &&rhs) noexcept
   {
     if (sig_ != rhs.sig_) {
       unblock();
@@ -172,14 +172,14 @@ public:
     return *this;
   }
 
-  void reblock() noexcept
+  constexpr void reblock() noexcept
   {
     if (sig_) {
       previous = sig_->setBlocked(true);
     }
   }
 
-  void unblock() noexcept
+  constexpr void unblock() noexcept
   {
     if (sig_) {
       sig_->setBlocked(previous);
@@ -187,7 +187,7 @@ public:
   }
 
 private:
-  void moveAssign(SignalBlocker &&rhs)
+  constexpr void moveAssign(SignalBlocker &&rhs)
   {
     sig_ = rhs.sig_;
     previous = rhs.previous;
@@ -232,12 +232,12 @@ private:
     {
     }
 
-    const Slot &slot() const noexcept
+    constexpr const Slot &slot() const noexcept
     {
       return slot_;
     }
 
-    BasicSignal *signal() const noexcept
+    constexpr BasicSignal *signal() const noexcept
     {
       return signal_;
     }
@@ -261,17 +261,17 @@ public:
   /// Interface that only exposes connect and disconnect methods.
   class Interface final {
   public:
-    explicit Interface(SignalType *sig) noexcept : sig_(sig)
+    explicit constexpr Interface(SignalType *sig) noexcept : sig_(sig)
     {
     }
 
-    ~Interface() noexcept = default;
+    constexpr ~Interface() noexcept = default;
 
-    Interface(const Interface &) = delete;
-    Interface(Interface &&) = delete;
+    constexpr Interface(const Interface &) = delete;
+    constexpr Interface(Interface &&) = delete;
 
-    Interface &operator=(const Interface &) = delete;
-    Interface &operator=(Interface &&) = delete;
+    constexpr Interface &operator=(const Interface &) = delete;
+    constexpr Interface &operator=(Interface &&) = delete;
 
     Connection connect(const Slot &slot) noexcept
     {
@@ -299,7 +299,7 @@ public:
       sig_->disconnect(conn);
     }
 
-    void disconnect(BasicSignal &signal) noexcept
+    constexpr void disconnect(BasicSignal &signal) noexcept
     {
       sig_->disconnect(signal);
     }
@@ -308,9 +308,9 @@ public:
     SignalType *sig_ = nullptr;
   };
 
-  BasicSignal() noexcept = default;
+  constexpr BasicSignal() noexcept = default;
 
-  virtual ~BasicSignal() noexcept
+  constexpr virtual ~BasicSignal() noexcept
   {
     Lock lock(entriesMutex);
     for (auto &entry : entries) {
@@ -320,7 +320,7 @@ public:
     }
   }
 
-  BasicSignal(const BasicSignal &rhs) noexcept : BasicSignal()
+  constexpr BasicSignal(const BasicSignal &rhs) noexcept : BasicSignal()
   {
     Lock lock1(entriesMutex);
     Lock lock2(rhs.entriesMutex);
@@ -330,7 +330,7 @@ public:
     blocked_ = rhs.blocked_.load();
   }
 
-  BasicSignal &operator=(const BasicSignal &rhs) noexcept
+  constexpr BasicSignal &operator=(const BasicSignal &rhs) noexcept
   {
     Lock lock1(entriesMutex);
     Lock lock2(rhs.entriesMutex);
@@ -339,16 +339,16 @@ public:
     return *this;
   }
 
-  BasicSignal(BasicSignal &&rhs) noexcept = default;
-  BasicSignal &operator=(BasicSignal &&rhs) noexcept = default;
+  constexpr BasicSignal(BasicSignal &&rhs) noexcept = default;
+  constexpr BasicSignal &operator=(BasicSignal &&rhs) noexcept = default;
 
-  std::size_t size() const noexcept
+  constexpr std::size_t size() const noexcept
   {
     Lock lock(entriesMutex);
-    return entries.size();
+    return std::size(entries);
   }
 
-  bool empty() const noexcept
+  constexpr bool empty() const noexcept
   {
     return 0 == size();
   }
@@ -388,7 +388,7 @@ public:
     return conn;
   }
 
-  void clear() noexcept
+  constexpr void clear() noexcept
   {
     Lock lock(entriesMutex);
     eraseEntries();
@@ -396,7 +396,7 @@ public:
 
   /// Disconnects \p conn from signal.
   /** If no value is given, all slots are disconnected. */
-  void disconnect(const std::optional<Connection> &conn = std::nullopt) noexcept
+  constexpr void disconnect(const std::optional<Connection> &conn = std::nullopt) noexcept
   {
     if (!conn) {
       clear();
@@ -407,7 +407,7 @@ public:
     eraseEntries([conn](auto it) { return it->conn() == conn; });
   }
 
-  void disconnect(BasicSignal &signal) noexcept
+  constexpr void disconnect(BasicSignal &signal) noexcept
   {
     assert(&signal != this && "Disconnecting from self has no effect.");
 
@@ -415,7 +415,7 @@ public:
     eraseEntries([sig = &signal](auto it) { return it->signal() == sig; });
   }
 
-  void operator()(Args &&...args) noexcept
+  constexpr void operator()(Args &&...args) noexcept
   {
     if (blocked()) return;
 
@@ -431,7 +431,7 @@ public:
   }
 
   template <typename RetFunc = typename detail::VoidableFunction<ReturnType>::func>
-  void operator()(const RetFunc &retFunc, Args &&...args) noexcept
+  constexpr void operator()(const RetFunc &retFunc, Args &&...args) noexcept
   {
     static_assert(!std::is_void_v<ReturnType>, "Must have non-void return type!");
 
@@ -448,20 +448,20 @@ public:
     }
   }
 
-  [[nodiscard]] std::unique_ptr<Interface> interface() noexcept
+  [[nodiscard]] constexpr std::unique_ptr<Interface> interface() noexcept
   {
     return std::make_unique<Interface>(this);
   }
 
   /// Returns the previous blocked state.
-  bool setBlocked(bool blocked)
+  constexpr bool setBlocked(bool blocked)
   {
     const auto previous = blocked_.load();
     blocked_ = blocked;
     return previous;
   }
 
-  bool blocked() const
+  constexpr bool blocked() const
   {
     return blocked_;
   }
@@ -475,7 +475,7 @@ private:
   }
 
   /// Expects entries container to be locked beforehand.
-  [[nodiscard]] typename Cont::iterator eraseEntry(typename Cont::iterator it) noexcept
+  [[nodiscard]] constexpr typename Cont::iterator eraseEntry(typename Cont::iterator it) noexcept
   {
     auto conn = it->conn();
     if (conn) {
@@ -484,9 +484,8 @@ private:
     return entries.erase(it);
   }
 
-  void eraseEntries(std::function<bool(typename Cont::iterator)> pred = [](auto /*unused*/) {
-    return true;
-  }) noexcept
+  constexpr void eraseEntries(std::function<bool(typename Cont::iterator)> pred =
+                                [](auto /*unused*/) { return true; }) noexcept
   {
     for (auto it = entries.begin(); it != entries.end();) {
       if (pred(it)) {
@@ -499,14 +498,14 @@ private:
   }
 
   template <typename Instance, typename MembFunc, std::size_t... Ns>
-  [[nodiscard]] Slot bindMf(Instance *instance, MembFunc Instance::*mf,
-                                   Seq<Ns...> /*unused*/) noexcept
+  [[nodiscard]] constexpr Slot bindMf(Instance *instance, MembFunc Instance::*mf,
+                                      Seq<Ns...> /*unused*/) noexcept
   {
     return std::bind(mf, instance, Placeholder<Ns>()...);
   }
 
   template <typename Instance, typename MembFunc>
-  [[nodiscard]] Slot bindMf(Instance *instance, MembFunc Instance::*mf) noexcept
+  [[nodiscard]] constexpr Slot bindMf(Instance *instance, MembFunc Instance::*mf) noexcept
   {
     return bindMf(instance, mf, MakeSeq<sizeof...(Args)>());
   }
